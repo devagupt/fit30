@@ -7,9 +7,14 @@ const urls = new Set(ASSETS.map((asset) => new URL(asset, scope).href));
 const indexUrl = new URL('index.html', scope).href;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(cacheName).then((cache) => cache.addAll(
-    [...urls].map((url) => new Request(url, { cache: 'reload' })),
-  )));
+  event.waitUntil((async () => {
+    const cache = await caches.open(cacheName);
+    // Keep completed downloads for the next install attempt if the connection drops.
+    for (const url of urls) {
+      const request = new Request(url, { cache: 'reload' });
+      if (!(await cache.match(request))) await cache.add(request);
+    }
+  })());
 });
 
 self.addEventListener('activate', (event) => {

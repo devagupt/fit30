@@ -206,10 +206,28 @@ test('restarting archives the previous run and keeps its saved workout history',
   await expect(button(page, 'Resume workout')).toHaveCount(0);
 });
 
-test('a fresh launch loads the gym app and saves progress without access to the Mac preview', async ({ page, context }) => {
+test('resumes an interrupted offline download and saves progress without the Mac preview', async ({ page, context }) => {
   const origins = new Set<string>();
   context.on('request', (request) => origins.add(new URL(request.url()).origin));
-  const server = await preview({ configFile: false, preview: { host: '127.0.0.1', port: 0, strictPort: true } });
+  let downloadInterrupted = true;
+  let indexDownloads = 0;
+  const server = await preview({
+    configFile: false,
+    preview: { host: '127.0.0.1', port: 0, strictPort: true },
+    plugins: [{
+      name: 'interrupt-offline-download',
+      configurePreviewServer({ middlewares }) {
+        middlewares.use((request, response, next) => {
+          if (request.url === '/index.html') indexDownloads += 1;
+          if (downloadInterrupted && request.url === '/studio-welcome-duo.jpg') {
+            response.writeHead(503).end();
+            return;
+          }
+          next();
+        });
+      },
+    }],
+  });
   let url: string;
   try {
     const address = server.httpServer.address();
@@ -217,7 +235,12 @@ test('a fresh launch loads the gym app and saves progress without access to the 
     url = `http://127.0.0.1:${address.port}/`;
     await onBoard(page, '2026-11-20', '', url);
     await tab(page, 'Settings');
+    await expect(button(page, 'Retry offline setup')).toBeVisible();
+    expect(indexDownloads).toBe(1);
+    downloadInterrupted = false;
+    await button(page, 'Retry offline setup').click();
     await expect(page.getByText('Ready for offline workouts')).toBeVisible();
+    expect(indexDownloads).toBe(1);
     const manifest = await page.request.get(`${url}manifest.webmanifest`);
     expect(await manifest.json()).toMatchObject({ name: 'Fit30', display: 'standalone', scope: './' });
     await page.close();

@@ -27,7 +27,7 @@ npm run build
 npm run preview -- --host 0.0.0.0
 ```
 
-On your phone, open the **Network** URL printed in the terminal. Use Safari on iPhone or Chrome on Android. This works while the Mac and phone can reach each other. For offline use, set up Fit30 once using Android USB forwarding or trusted HTTPS. [Service Workers specification](https://www.w3.org/TR/service-workers/)
+On your phone, open the **Network** URL printed in the terminal. Use Safari on iPhone or Chrome on Android. This works while the Mac and phone can reach each other. For offline use, set up Fit30 once using Android port forwarding over USB or Wi-Fi, or use trusted HTTPS. [Service Workers specification](https://www.w3.org/TR/service-workers/)
 
 ### Install on Android for the gym
 
@@ -41,6 +41,13 @@ On your phone, open the **Network** URL printed in the terminal. Use Safari on i
 3. On your Mac, open `chrome://inspect/#devices` in Chrome and make sure **Discover USB devices** is checked. In **Port forwarding**, enter `4173` on the left and `127.0.0.1:4173` on the right. Check **Enable port forwarding**, then click **Done**. [Chrome USB forwarding instructions](https://developer.chrome.com/docs/devtools/remote-debugging/local-server)
 4. On the phone, open `http://localhost:4173/` in Chrome. Finish Fit30 setup or restore your laptop backup. In Fit30, open **Settings → Install Fit30** and wait for **Ready for offline workouts**. Tap **Install on this device** when offered, or use Chrome’s **Install and create shortcut** menu. [Chrome installation instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&hl=en)
 5. Open Fit30 from the Home Screen, unplug the phone, and turn on airplane mode. Close and reopen the app and verify that the plan, workout timer, and written cues load. Once this check passes, you can use Fit30 at the gym without your Mac. Restore internet access when you want to stream exercise videos.
+
+### Install on Android over Wi-Fi
+
+1. Connect the Mac and your Android 11 or later phone to the same Wi-Fi. On the Mac, run `npm run phone` from the project folder. On Android, open **Developer options → Wireless debugging** and pair with Google’s SDK Platform-Tools. [Wireless pairing instructions](https://developer.android.com/tools/adb#connect-to-a-device-over-wi-fi)
+2. In Terminal, run `./adb devices` from the extracted `platform-tools` folder. If the phone is missing from the list, run `./adb connect IP_ADDRESS:PORT` using the **IP address & port** on the main Wireless debugging screen. Then run `./adb reverse tcp:4173 tcp:4173`. [ADB command reference](https://android.googlesource.com/platform/packages/modules/adb/+/refs/heads/main/docs/user/adb.1.md)
+3. Open `http://localhost:4173/` in Chrome on the phone. Go to **Settings → Install Fit30**. If the link drops during setup, reconnect, restore the port forwarding, and tap **Retry offline setup**. Fit30 reuses app files it has already downloaded for the current build.
+4. When Fit30 says **Ready for offline workouts**, install it from Chrome. Turn off Wireless debugging and test a fresh launch from the Home Screen in airplane mode. [Chrome installation instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&hl=en)
 
 ### Install over trusted HTTPS
 

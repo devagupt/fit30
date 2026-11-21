@@ -32,8 +32,8 @@ const suggestedTimezones = [...new Set([
 const offlineCopy: Record<OfflineStatus, string> = {
   ready: 'Ready for offline workouts',
   preparing: 'Preparing Fit30 for offline use…',
-  setup_failed: 'Offline setup couldn’t finish. Connect to the preview and try again.',
-  unavailable: 'Open the production preview through Android USB setup or at a trusted HTTPS address to prepare for offline use.',
+  setup_failed: 'Offline setup was interrupted. Reconnect to Fit30 and retry to continue the download.',
+  unavailable: 'Open the production preview through Android port forwarding or at a trusted HTTPS address to prepare for offline use.',
 };
 
 function FeedbackLine({ feedback }: { feedback: Feedback | null }) {
