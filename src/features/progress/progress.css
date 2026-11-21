@@ -1,0 +1,378 @@
+.fit-progress-cards {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 16px;
+}
+
+.fit-progress .fit-progress-card {
+  min-width: 0;
+  padding: 13px 12px;
+}
+
+.fit-progress-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.fit-progress-card dt {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: .84rem;
+  font-weight: 650;
+  gap: 6px;
+}
+
+.fit-progress-card dt svg,
+.fit-progress-heading h2 svg {
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.fit-progress-card dd {
+  color: var(--ink);
+  font-size: clamp(1.6rem, 4vw, 2.35rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -.06em;
+  line-height: 1.1;
+  margin: 8px 0 0;
+}
+
+.fit-progress-card dd span {
+  color: var(--muted);
+  font-size: .75em;
+  font-weight: 650;
+}
+
+.fit-progress-card dd small {
+  color: var(--muted);
+  display: block;
+  font-size: .8rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.25;
+  margin-top: 5px;
+}
+
+.fit-progress-panels {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-areas: "activity" "exercises" "measurements";
+}
+
+.fit-progress-activity-panel { grid-area: activity; }
+.fit-progress-measurements-panel { grid-area: measurements; }
+.fit-exercise-analytics { grid-area: exercises; }
+
+.fit-progress-block {
+  min-width: 0;
+}
+
+.fit-progress-heading {
+  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px;
+  justify-content: space-between;
+}
+
+.fit-progress-heading h2 {
+  align-items: center;
+  display: flex;
+  font-size: 1.2rem;
+  gap: 8px;
+  line-height: 1.17;
+  margin: 0;
+}
+
+.fit-progress-heading p,
+.fit-progress-empty {
+  color: var(--muted);
+  font-size: .9rem;
+  margin: 6px 0 0;
+}
+
+.fit-progress-period { margin-bottom: 14px; }
+
+.fit-progress-empty {
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
+.fit-progress-filter {
+  align-items: center;
+  background: var(--wash);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 100%;
+  padding: 2px;
+}
+
+.fit-progress .fit-progress-filter .button {
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: .83rem;
+  min-height: 44px;
+  padding: 5px 9px;
+}
+
+.fit-progress .fit-progress-filter .button[aria-pressed="true"] {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--accent);
+  font-weight: 750;
+}
+
+.fit-progress-total {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -.045em;
+  margin: 15px 0 12px;
+}
+
+.fit-progress-categories,
+.fit-progress-waist ul,
+.fit-progress-records ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fit-progress-categories {
+  display: grid;
+  gap: 11px;
+}
+
+.fit-progress-category {
+  align-items: baseline;
+  display: grid;
+  font-size: .88rem;
+  gap: 5px;
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+.fit-progress-category span,
+.fit-progress-waist time,
+.fit-progress-records time {
+  color: var(--muted);
+}
+
+.fit-progress-category .fit-progress-bar {
+  grid-column: 1 / -1;
+}
+
+.fit-progress-bar {
+  background: var(--tint);
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.fit-progress-bar > span {
+  background: var(--accent);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+}
+
+.fit-progress-category[data-category="strength"] .fit-progress-bar > span {
+  background: var(--info);
+}
+
+.fit-progress-category[data-category="core"] .fit-progress-bar > span {
+  background: #d0b8e3;
+}
+
+.fit-progress-category[data-category="recovery"] .fit-progress-bar > span {
+  background: var(--success);
+}
+
+.fit-exercise-selector {
+  margin-top: 14px;
+}
+
+.fit-exercise-stats {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 14px 0 18px;
+}
+
+.fit-exercise-stats > div {
+  background: var(--wash);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 10px 11px;
+}
+
+.fit-exercise-stats dt,
+.fit-exercise-history p,
+.fit-exercise-history time {
+  color: var(--muted);
+  font-size: .84rem;
+}
+
+.fit-exercise-stats dd {
+  font-size: 1.12rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 780;
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.fit-exercise-analytics h3 { font-size: 1rem; }
+
+.fit-exercise-history {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.fit-exercise-history li {
+  align-items: baseline;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 5px 8px;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  padding: 9px 0;
+}
+
+.fit-exercise-history li:last-child { padding-bottom: 0; }
+.fit-exercise-history strong { font-size: .9rem; font-variant-numeric: tabular-nums; }
+.fit-exercise-history li > p,
+.fit-exercise-history .fit-progress-bar { grid-column: 1 / -1; }
+
+.fit-progress-waist {
+  border-top: 1px solid var(--line);
+  margin: 15px 0 0;
+  padding-top: 12px;
+}
+
+.fit-progress-waist figcaption {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 11px;
+}
+
+.fit-progress-waist figcaption strong {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -.045em;
+}
+
+.fit-progress-waist figcaption span {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+.fit-progress-waist ul {
+  display: grid;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.fit-progress-waist li {
+  align-items: center;
+  display: grid;
+  font-size: .83rem;
+  gap: 8px;
+  grid-template-columns: 4rem minmax(0, 1fr) max-content;
+}
+
+.fit-progress-records {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+}
+
+.fit-progress-records summary {
+  align-content: center;
+  cursor: pointer;
+  font-size: .89rem;
+  font-weight: 650;
+  min-height: 44px;
+}
+
+.fit-progress-records li {
+  border-top: 1px solid var(--line);
+  display: grid;
+  font-size: .85rem;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(3rem, .7fr) max-content;
+  padding: 8px 0;
+}
+
+.fit-progress-form {
+  background: var(--wash);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  display: grid;
+  gap: 11px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.fit-progress-fields {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fit-progress-fields .field:first-child {
+  grid-column: 1 / -1;
+}
+
+.fit-progress-fields .field,
+.fit-progress-fields input {
+  min-width: 0;
+  width: 100%;
+}
+
+.fit-progress-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.fit-progress-error,
+.fit-progress-saved {
+  color: var(--error-ink);
+  font-size: .9rem;
+  font-weight: 650;
+  margin: 5px 0 0;
+}
+
+.fit-progress-saved {
+  color: var(--success);
+  margin-top: 12px;
+}
+
+@media (min-width: 700px) {
+  .fit-progress-cards {
+    gap: 15px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 20px;
+  }
+
+  .fit-progress .fit-progress-card {
+    padding: 16px;
+  }
+
+  .fit-progress-card:last-child {
+    grid-column: auto;
+  }
+}
+
+@media (min-width: 870px) {
+  .fit-progress-panels {
+    gap: 20px;
+    grid-template-areas: "activity exercises" "measurements exercises";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+  }
+}

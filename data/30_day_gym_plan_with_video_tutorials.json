@@ -1,0 +1,2473 @@
+{
+  "schema_version": "1.1.0",
+  "program_id": "simple_30_min_fitness_30_days",
+  "program_name": "30-Day Simple Gym Fitness Plan",
+  "program_duration_days": 30,
+  "schedule_type": "relative_day_number",
+  "start_date": null,
+  "timezone": "Asia/Kolkata",
+  "goal": [
+    "general_health",
+    "cardiorespiratory_stamina",
+    "full_body_strength",
+    "waist_management"
+  ],
+  "constraints": {
+    "active_days_per_week": 6,
+    "rest_days_per_week": 1,
+    "target_gym_minutes_per_active_day": 30,
+    "max_sessions_per_day": 1,
+    "lower_back_strain_history": true
+  },
+  "guidelines": [
+    "Days are numbered from 1; map day 1 to any start date chosen by the user.",
+    "The first treadmill minutes are a warm-up. Allow recovery/transition within each strength/core block.",
+    "If machine changes take longer than planned, shorten cardio by a few minutes instead of rushing sets.",
+    "Use a light resistance that allows controlled, pain-free repetitions; gradually increase load only if comfortable.",
+    "Choose brisk walking instead of jogging if running causes back discomfort.",
+    "Low row means a supported/upright low row machine. Do not use bent-over unsupported rows with back pain.",
+    "Stop an exercise that worsens back pain. If pain radiates to the leg or persists, get medical assessment.",
+    "Core exercises do not selectively reduce belly fat; nutritional habits and overall activity matter.",
+    "A 20-minute walk on rest day is optional and not counted as a gym workout."
+  ],
+  "daily_tracking_fields": [
+    "workout_completed",
+    "minutes_completed",
+    "perceived_effort_1_to_10",
+    "back_pain_0_to_10",
+    "notes"
+  ],
+  "weekly_tracking_fields": [
+    "waist_cm",
+    "body_weight_kg_optional"
+  ],
+  "exercise_library": {
+    "treadmill_walk_jog": {
+      "name": "Treadmill - brisk walk / light jog",
+      "category": "cardio",
+      "equipment": "treadmill",
+      "instructions": "Brisk walk for first 3 minutes, then jog gently or continue brisk walking for 7 minutes. Use talk-test moderate effort.",
+      "back_safety": "Prefer brisk walking instead of jogging if running aggravates your lower back.",
+      "default_prescription": {
+        "duration_min": 10,
+        "sets": null,
+        "reps": null,
+        "unit": null
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "m1UF4RgGoY0",
+        "title": "Complete Beginner Gym Guide - How to Use a Treadmill",
+        "creator": "KevTheTrainer",
+        "watch_url": "https://www.youtube.com/watch?v=m1UF4RgGoY0",
+        "embed_url": "https://www.youtube-nocookie.com/embed/m1UF4RgGoY0",
+        "start_seconds": 130,
+        "end_seconds": 144,
+        "source_page_url": null,
+        "exercise_match_note": "Video segment shows treadmill use; match controls and safety clip to the actual treadmill.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Brisk walk for first 3 minutes, then jog gently or continue brisk walking for 7 minutes. Use talk-test moderate effort.",
+        "Prefer brisk walking instead of jogging if running aggravates your lower back."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "stationary_cycling": {
+      "name": "Stationary cycling",
+      "category": "cardio",
+      "equipment": "stationary bicycle",
+      "instructions": "Pedal at moderate resistance and a pace that still allows conversation.",
+      "back_safety": "Keep trunk comfortable and avoid leaning excessively forward.",
+      "default_prescription": {
+        "duration_min": 8,
+        "sets": null,
+        "reps": null,
+        "unit": null
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "m1UF4RgGoY0",
+        "title": "Complete Beginner Gym Guide - Stationary Bike Setup",
+        "creator": "KevTheTrainer",
+        "watch_url": "https://www.youtube.com/watch?v=m1UF4RgGoY0",
+        "embed_url": "https://www.youtube-nocookie.com/embed/m1UF4RgGoY0",
+        "start_seconds": 164,
+        "end_seconds": 173,
+        "source_page_url": null,
+        "exercise_match_note": "Video segment shows a stationary bike; adjust seat appropriately for the actual gym bike.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Pedal at moderate resistance and a pace that still allows conversation.",
+        "Keep trunk comfortable and avoid leaning excessively forward."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "chest_press_machine": {
+      "name": "Chest press machine",
+      "category": "strength",
+      "equipment": "chest press machine",
+      "instructions": "Use a light load. Keep upper back supported; press smoothly without locking elbows.",
+      "back_safety": "Avoid arching lower back; stop if pain occurs.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 10,
+        "unit": "repetitions"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "tfLET28B5bM",
+        "title": "Chest Press (Resistance Machine)",
+        "creator": "QMotion, Queen Mary University of London Students Union",
+        "watch_url": "https://www.youtube.com/watch?v=tfLET28B5bM",
+        "embed_url": "https://www.youtube-nocookie.com/embed/tfLET28B5bM",
+        "start_seconds": 0,
+        "end_seconds": null,
+        "source_page_url": "https://www.qmsu.org/qmotion/guides/video/21286/Chest-Press-Resistance-Machine/",
+        "exercise_match_note": "Check the user’s chest press machine configuration; set seat so handles align approximately with mid-chest.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Use a light load. Keep upper back supported; press smoothly without locking elbows.",
+        "Avoid arching lower back; stop if pain occurs."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "leg_press_machine": {
+      "name": "Leg press machine",
+      "category": "strength",
+      "equipment": "leg press machine",
+      "instructions": "Use a light load. Keep hips and lower back against the pad; use a comfortable range of motion.",
+      "back_safety": "Do not bring knees so close to chest that your pelvis rounds off the pad.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 10,
+        "unit": "repetitions"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "hiI-JdtEGIs",
+        "title": "Leg Press (Resistance Machine)",
+        "creator": "QMotion, Queen Mary University of London Students Union",
+        "watch_url": "https://www.youtube.com/watch?v=hiI-JdtEGIs",
+        "embed_url": "https://www.youtube-nocookie.com/embed/hiI-JdtEGIs",
+        "start_seconds": 0,
+        "end_seconds": null,
+        "source_page_url": "https://www.qmsu.org/qmotion/guides/video/21286/Leg-Press/",
+        "exercise_match_note": "Demonstration may use a different leg-press style; keep lower back and pelvis supported and use manageable range.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Use a light load. Keep hips and lower back against the pad; use a comfortable range of motion.",
+        "Do not bring knees so close to chest that your pelvis rounds off the pad."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "low_row_machine": {
+      "name": "Low row machine (lower row)",
+      "category": "strength",
+      "equipment": "low row machine",
+      "instructions": "Use the machine that lets you row handles toward the waist with an upright or chest-supported trunk. Pull smoothly.",
+      "back_safety": "Avoid bent-over unsupported rowing or swinging the torso. If your machine requires bending forward, substitute a supported row or lat pulldown.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 10,
+        "unit": "repetitions"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "FU6YQawma2Q",
+        "title": "How to Properly Use Chest Supported Row Machine (Quick Fixes)",
+        "creator": "Colossus Fitness",
+        "watch_url": "https://www.youtube.com/watch?v=FU6YQawma2Q",
+        "embed_url": "https://www.youtube-nocookie.com/embed/FU6YQawma2Q",
+        "start_seconds": 13,
+        "end_seconds": 118,
+        "source_page_url": null,
+        "exercise_match_note": "This tutorial shows a chest-supported machine often labeled a low row; confirm the actual lower row equipment matches before using.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Use the machine that lets you row handles toward the waist with an upright or chest-supported trunk. Pull smoothly.",
+        "Avoid bent-over unsupported rowing or swinging the torso. If your machine requires bending forward, substitute a supported row or lat pulldown."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "lat_pulldown": {
+      "name": "Lat pulldown machine",
+      "category": "strength",
+      "equipment": "lat pulldown machine",
+      "instructions": "Pull bar toward upper chest while keeping torso stable; do not lean back sharply.",
+      "back_safety": "Use light resistance and avoid rocking.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 10,
+        "unit": "repetitions"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "D8b3OVbRfwE",
+        "title": "Lat Pulldown",
+        "creator": "QMotion, Queen Mary University of London Students Union",
+        "watch_url": "https://www.youtube.com/watch?v=D8b3OVbRfwE",
+        "embed_url": "https://www.youtube-nocookie.com/embed/D8b3OVbRfwE",
+        "start_seconds": 0,
+        "end_seconds": null,
+        "source_page_url": "https://www.qmsu.org/qmotion/guides/video/21286/Lat-Pulldown/",
+        "exercise_match_note": "Pull toward upper chest in front of head, not behind neck; avoid excessive torso swing.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Pull bar toward upper chest while keeping torso stable; do not lean back sharply.",
+        "Use light resistance and avoid rocking."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "plank": {
+      "name": "Forearm plank (or knee plank)",
+      "category": "core",
+      "equipment": "exercise mat",
+      "instructions": "Hold comfortable neutral-spine plank, breathing steadily. 2 x 20 seconds; remaining time allows rest/setup.",
+      "back_safety": "Stop if lower back sags or hurts; regress to knees.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 20,
+        "unit": "seconds_hold"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "LSd0aTrVWlg",
+        "title": "How to Do a Plank: A Guide from Physical Therapists",
+        "creator": "Hinge Health",
+        "watch_url": "https://www.youtube.com/watch?v=LSd0aTrVWlg",
+        "embed_url": "https://www.youtube-nocookie.com/embed/LSd0aTrVWlg",
+        "start_seconds": 0,
+        "end_seconds": null,
+        "source_page_url": null,
+        "exercise_match_note": "Use a knee-plank variation when the full forearm plank causes the lower back to sag or hurt.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Hold comfortable neutral-spine plank, breathing steadily. 2 x 20 seconds; remaining time allows rest/setup.",
+        "Stop if lower back sags or hurts; regress to knees."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "bird_dog": {
+      "name": "Bird-dog",
+      "category": "core",
+      "equipment": "exercise mat",
+      "instructions": "On hands and knees, slowly extend opposite arm and leg while bracing trunk. 2 x 8 each side.",
+      "back_safety": "Avoid lifting legs so high that your back arches.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 8,
+        "unit": "repetitions_per_side"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "xEDnlOxeJH4",
+        "title": "How to Do the Bird Dog Exercise: A Guide from Physical Therapists",
+        "creator": "Hinge Health",
+        "watch_url": "https://www.youtube.com/watch?v=xEDnlOxeJH4",
+        "embed_url": "https://www.youtube-nocookie.com/embed/xEDnlOxeJH4",
+        "start_seconds": 0,
+        "end_seconds": null,
+        "source_page_url": null,
+        "exercise_match_note": "Avoid rotating hips or over-arching the lower back; start with small movements.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "On hands and knees, slowly extend opposite arm and leg while bracing trunk. 2 x 8 each side.",
+        "Avoid lifting legs so high that your back arches."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "glute_bridge": {
+      "name": "Glute bridge",
+      "category": "core_glutes",
+      "equipment": "exercise mat",
+      "instructions": "Lie with knees bent, lift hips comfortably by squeezing glutes. 2 x 10 controlled reps.",
+      "back_safety": "Avoid hyperextending or forcing your lower back upward.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 10,
+        "unit": "repetitions"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "PhTDzR0TpZs",
+        "title": "How to Do a Glute Bridge Exercise: A Guide from Physical Therapists",
+        "creator": "Hinge Health",
+        "watch_url": "https://www.youtube.com/watch?v=PhTDzR0TpZs",
+        "embed_url": "https://www.youtube-nocookie.com/embed/PhTDzR0TpZs",
+        "start_seconds": 0,
+        "end_seconds": null,
+        "source_page_url": null,
+        "exercise_match_note": "Lift by squeezing the glutes; do not arch your lower back to achieve greater height.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Lie with knees bent, lift hips comfortably by squeezing glutes. 2 x 10 controlled reps.",
+        "Avoid hyperextending or forcing your lower back upward."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "dead_bug": {
+      "name": "Dead bug",
+      "category": "core",
+      "equipment": "exercise mat",
+      "instructions": "Lie on back, slowly lower opposite arm/leg while keeping trunk stable. 2 x 8 each side.",
+      "back_safety": "Shorten arm/leg reach if back arches or discomfort starts.",
+      "default_prescription": {
+        "duration_min": 5,
+        "sets": 2,
+        "reps": 8,
+        "unit": "repetitions_per_side"
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "qxY_0Wrkxw8",
+        "title": "How to do physio led Pilates exercises: Dead Bug",
+        "creator": "Complete Pilates",
+        "watch_url": "https://www.youtube.com/watch?v=qxY_0Wrkxw8",
+        "embed_url": "https://www.youtube-nocookie.com/embed/qxY_0Wrkxw8",
+        "start_seconds": 0,
+        "end_seconds": null,
+        "source_page_url": null,
+        "exercise_match_note": "Demonstrates controlled variations, including toe taps; choose a version allowing stable, comfortable back position.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Lie on back, slowly lower opposite arm/leg while keeping trunk stable. 2 x 8 each side.",
+        "Shorten arm/leg reach if back arches or discomfort starts."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "gentle_cooldown": {
+      "name": "Gentle cooldown and stretches",
+      "category": "recovery",
+      "equipment": "none",
+      "instructions": "Easy walking plus gentle calf, thigh and shoulder stretches; no forced movements.",
+      "back_safety": "Avoid painful stretches.",
+      "default_prescription": {
+        "duration_min": 2,
+        "sets": null,
+        "reps": null,
+        "unit": null
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "m1UF4RgGoY0",
+        "title": "Complete Beginner Gym Guide - Cool-Down Stretching Routine",
+        "creator": "KevTheTrainer",
+        "watch_url": "https://www.youtube.com/watch?v=m1UF4RgGoY0",
+        "embed_url": "https://www.youtube-nocookie.com/embed/m1UF4RgGoY0",
+        "start_seconds": 737,
+        "end_seconds": 760,
+        "source_page_url": null,
+        "exercise_match_note": "Video segment offers general cooldown guidance. Avoid stretches that provoke back symptoms.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Easy walking plus gentle calf, thigh and shoulder stretches; no forced movements.",
+        "Avoid painful stretches."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    },
+    "optional_walk": {
+      "name": "Optional easy walk",
+      "category": "recovery",
+      "equipment": "none",
+      "instructions": "Relaxed walk at your own pace. Optional on weekly rest day.",
+      "back_safety": "Skip or reduce if it aggravates pain.",
+      "default_prescription": {
+        "duration_min": 20,
+        "sets": null,
+        "reps": null,
+        "unit": null
+      },
+      "tutorial_video": {
+        "provider": "youtube",
+        "youtube_video_id": "m1UF4RgGoY0",
+        "title": "Complete Beginner Gym Guide - How to Use a Treadmill",
+        "creator": "KevTheTrainer",
+        "watch_url": "https://www.youtube.com/watch?v=m1UF4RgGoY0",
+        "embed_url": "https://www.youtube-nocookie.com/embed/m1UF4RgGoY0",
+        "start_seconds": 130,
+        "end_seconds": 144,
+        "source_page_url": null,
+        "exercise_match_note": "Optional walk needs no gym machine; this is a substitute treadmill-walking reference, not necessary to watch.",
+        "editorial_status": "source_located_review_equipment_match_before_shipping",
+        "may_embed_if_allowed": true,
+        "default_open_mode": "in_app_embed",
+        "fallback_open_mode": "external_browser"
+      },
+      "quick_form_cues": [
+        "Relaxed walk at your own pace. Optional on weekly rest day.",
+        "Skip or reduce if it aggravates pain."
+      ],
+      "instructional_disclaimer": "Educational demonstration only. Stop if movement causes back pain, dizziness or other concerning symptoms."
+    }
+  },
+  "weekly_rotation": [
+    {
+      "cycle_day": 1,
+      "session_name": "Push + front-core",
+      "focus": "Chest and abdominal stability",
+      "exercise_ids": [
+        "treadmill_walk_jog",
+        "stationary_cycling",
+        "chest_press_machine",
+        "plank",
+        "gentle_cooldown"
+      ]
+    },
+    {
+      "cycle_day": 2,
+      "session_name": "Legs + stability",
+      "focus": "Leg strength and spinal stability",
+      "exercise_ids": [
+        "treadmill_walk_jog",
+        "stationary_cycling",
+        "leg_press_machine",
+        "bird_dog",
+        "gentle_cooldown"
+      ]
+    },
+    {
+      "cycle_day": 3,
+      "session_name": "Pull + glutes",
+      "focus": "Back strength and hip stability",
+      "exercise_ids": [
+        "treadmill_walk_jog",
+        "stationary_cycling",
+        "low_row_machine",
+        "glute_bridge",
+        "gentle_cooldown"
+      ]
+    },
+    {
+      "cycle_day": 4,
+      "session_name": "Push + core control",
+      "focus": "Chest and controlled core work",
+      "exercise_ids": [
+        "treadmill_walk_jog",
+        "stationary_cycling",
+        "chest_press_machine",
+        "dead_bug",
+        "gentle_cooldown"
+      ]
+    },
+    {
+      "cycle_day": 5,
+      "session_name": "Legs + glutes",
+      "focus": "Lower-body and hip strength",
+      "exercise_ids": [
+        "treadmill_walk_jog",
+        "stationary_cycling",
+        "leg_press_machine",
+        "glute_bridge",
+        "gentle_cooldown"
+      ]
+    },
+    {
+      "cycle_day": 6,
+      "session_name": "Pull + stability",
+      "focus": "Upper-back strength and core stability",
+      "exercise_ids": [
+        "treadmill_walk_jog",
+        "stationary_cycling",
+        "lat_pulldown",
+        "bird_dog",
+        "gentle_cooldown"
+      ]
+    },
+    {
+      "cycle_day": 7,
+      "session_name": "Rest / optional walk",
+      "focus": "Recovery",
+      "exercise_ids": [
+        "optional_walk"
+      ]
+    }
+  ],
+  "days": [
+    {
+      "day_number": 1,
+      "week_number": 1,
+      "cycle_day": 1,
+      "day_type": "gym",
+      "session_name": "Push + front-core",
+      "focus": "Chest and abdominal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "plank",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 20,
+          "reps_unit": "seconds_hold",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 2,
+      "week_number": 1,
+      "cycle_day": 2,
+      "day_type": "gym",
+      "session_name": "Legs + stability",
+      "focus": "Leg strength and spinal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 3,
+      "week_number": 1,
+      "cycle_day": 3,
+      "day_type": "gym",
+      "session_name": "Pull + glutes",
+      "focus": "Back strength and hip stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "low_row_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 4,
+      "week_number": 1,
+      "cycle_day": 4,
+      "day_type": "gym",
+      "session_name": "Push + core control",
+      "focus": "Chest and controlled core work",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "dead_bug",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 5,
+      "week_number": 1,
+      "cycle_day": 5,
+      "day_type": "gym",
+      "session_name": "Legs + glutes",
+      "focus": "Lower-body and hip strength",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 6,
+      "week_number": 1,
+      "cycle_day": 6,
+      "day_type": "gym",
+      "session_name": "Pull + stability",
+      "focus": "Upper-back strength and core stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "lat_pulldown",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 7,
+      "week_number": 1,
+      "cycle_day": 7,
+      "day_type": "rest",
+      "session_name": "Rest / optional walk",
+      "focus": "Recovery",
+      "target_gym_minutes": 0,
+      "optional_activity_minutes": 20,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "optional_walk",
+          "duration_min": 20,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": true,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 8,
+      "week_number": 2,
+      "cycle_day": 1,
+      "day_type": "gym",
+      "session_name": "Push + front-core",
+      "focus": "Chest and abdominal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "plank",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 20,
+          "reps_unit": "seconds_hold",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 9,
+      "week_number": 2,
+      "cycle_day": 2,
+      "day_type": "gym",
+      "session_name": "Legs + stability",
+      "focus": "Leg strength and spinal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 10,
+      "week_number": 2,
+      "cycle_day": 3,
+      "day_type": "gym",
+      "session_name": "Pull + glutes",
+      "focus": "Back strength and hip stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "low_row_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 11,
+      "week_number": 2,
+      "cycle_day": 4,
+      "day_type": "gym",
+      "session_name": "Push + core control",
+      "focus": "Chest and controlled core work",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "dead_bug",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 12,
+      "week_number": 2,
+      "cycle_day": 5,
+      "day_type": "gym",
+      "session_name": "Legs + glutes",
+      "focus": "Lower-body and hip strength",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 13,
+      "week_number": 2,
+      "cycle_day": 6,
+      "day_type": "gym",
+      "session_name": "Pull + stability",
+      "focus": "Upper-back strength and core stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "lat_pulldown",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 14,
+      "week_number": 2,
+      "cycle_day": 7,
+      "day_type": "rest",
+      "session_name": "Rest / optional walk",
+      "focus": "Recovery",
+      "target_gym_minutes": 0,
+      "optional_activity_minutes": 20,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "optional_walk",
+          "duration_min": 20,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": true,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 15,
+      "week_number": 3,
+      "cycle_day": 1,
+      "day_type": "gym",
+      "session_name": "Push + front-core",
+      "focus": "Chest and abdominal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "plank",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 20,
+          "reps_unit": "seconds_hold",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 16,
+      "week_number": 3,
+      "cycle_day": 2,
+      "day_type": "gym",
+      "session_name": "Legs + stability",
+      "focus": "Leg strength and spinal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 17,
+      "week_number": 3,
+      "cycle_day": 3,
+      "day_type": "gym",
+      "session_name": "Pull + glutes",
+      "focus": "Back strength and hip stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "low_row_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 18,
+      "week_number": 3,
+      "cycle_day": 4,
+      "day_type": "gym",
+      "session_name": "Push + core control",
+      "focus": "Chest and controlled core work",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "dead_bug",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 19,
+      "week_number": 3,
+      "cycle_day": 5,
+      "day_type": "gym",
+      "session_name": "Legs + glutes",
+      "focus": "Lower-body and hip strength",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 20,
+      "week_number": 3,
+      "cycle_day": 6,
+      "day_type": "gym",
+      "session_name": "Pull + stability",
+      "focus": "Upper-back strength and core stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "lat_pulldown",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 21,
+      "week_number": 3,
+      "cycle_day": 7,
+      "day_type": "rest",
+      "session_name": "Rest / optional walk",
+      "focus": "Recovery",
+      "target_gym_minutes": 0,
+      "optional_activity_minutes": 20,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "optional_walk",
+          "duration_min": 20,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": true,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 22,
+      "week_number": 4,
+      "cycle_day": 1,
+      "day_type": "gym",
+      "session_name": "Push + front-core",
+      "focus": "Chest and abdominal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "plank",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 20,
+          "reps_unit": "seconds_hold",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 23,
+      "week_number": 4,
+      "cycle_day": 2,
+      "day_type": "gym",
+      "session_name": "Legs + stability",
+      "focus": "Leg strength and spinal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 24,
+      "week_number": 4,
+      "cycle_day": 3,
+      "day_type": "gym",
+      "session_name": "Pull + glutes",
+      "focus": "Back strength and hip stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "low_row_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 25,
+      "week_number": 4,
+      "cycle_day": 4,
+      "day_type": "gym",
+      "session_name": "Push + core control",
+      "focus": "Chest and controlled core work",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "dead_bug",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 26,
+      "week_number": 4,
+      "cycle_day": 5,
+      "day_type": "gym",
+      "session_name": "Legs + glutes",
+      "focus": "Lower-body and hip strength",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "glute_bridge",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 27,
+      "week_number": 4,
+      "cycle_day": 6,
+      "day_type": "gym",
+      "session_name": "Pull + stability",
+      "focus": "Upper-back strength and core stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "lat_pulldown",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 28,
+      "week_number": 4,
+      "cycle_day": 7,
+      "day_type": "rest",
+      "session_name": "Rest / optional walk",
+      "focus": "Recovery",
+      "target_gym_minutes": 0,
+      "optional_activity_minutes": 20,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "optional_walk",
+          "duration_min": 20,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": true,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 29,
+      "week_number": 5,
+      "cycle_day": 1,
+      "day_type": "gym",
+      "session_name": "Push + front-core",
+      "focus": "Chest and abdominal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "chest_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "plank",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 20,
+          "reps_unit": "seconds_hold",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    },
+    {
+      "day_number": 30,
+      "week_number": 5,
+      "cycle_day": 2,
+      "day_type": "gym",
+      "session_name": "Legs + stability",
+      "focus": "Leg strength and spinal stability",
+      "target_gym_minutes": 30,
+      "optional_activity_minutes": 0,
+      "exercise_blocks": [
+        {
+          "order": 1,
+          "exercise_id": "treadmill_walk_jog",
+          "duration_min": 10,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 2,
+          "exercise_id": "stationary_cycling",
+          "duration_min": 8,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 3,
+          "exercise_id": "leg_press_machine",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 10,
+          "reps_unit": "repetitions",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 4,
+          "exercise_id": "bird_dog",
+          "duration_min": 5,
+          "sets": 2,
+          "reps": 8,
+          "reps_unit": "repetitions_per_side",
+          "optional": false,
+          "completed": false
+        },
+        {
+          "order": 5,
+          "exercise_id": "gentle_cooldown",
+          "duration_min": 2,
+          "sets": null,
+          "reps": null,
+          "reps_unit": null,
+          "optional": false,
+          "completed": false
+        }
+      ],
+      "tracking": {
+        "workout_completed": false,
+        "minutes_completed": 0,
+        "perceived_effort_1_to_10": null,
+        "back_pain_0_to_10": null,
+        "notes": ""
+      }
+    }
+  ],
+  "feature_flags": {
+    "exercise_tutorial_videos": true,
+    "tutorial_video_in_app_embed": true,
+    "tutorial_pauses_workout_clock": true
+  },
+  "video_player_policy": {
+    "time_budget": "Tutorial viewing time is outside the prescribed 30-minute workout time. Pause the session timer while video is open.",
+    "first_time_behavior": "Offer tutorial automatically on the first encounter with an exercise; users can dismiss and choose not to auto-show it again.",
+    "replays": "Watch tutorial and replay available from each exercise card in all sessions.",
+    "failure_fallback": "Show written instructions and an external open-video link if embed is blocked, missing or offline.",
+    "video_controls": [
+      "play",
+      "pause",
+      "seek",
+      "mute",
+      "captions",
+      "speed_when_supported",
+      "fullscreen"
+    ],
+    "rights": "Embed only if the source allows it. Do not download, copy, or rehost source videos without the owner’s permission.",
+    "machine_match": "The low-row and leg-press machines can vary; require equipment match and allow substitute demos.",
+    "review_policy": "Links found on public pages; a clinician or trainer has not reviewed each video against the user’s gym equipment.",
+    "offline": "Written cues remain available offline. Videos may require connectivity.",
+    "notification": "Daily reminder shows today’s workout; only start within-workout transitions after the user taps Start."
+  }
+}

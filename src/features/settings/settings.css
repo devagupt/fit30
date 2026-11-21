@@ -1,0 +1,98 @@
+.settings-grid, .settings-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.settings-panel { min-width: 0; }
+
+.settings-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  margin: 0 0 1rem;
+  line-height: 1.2;
+}
+
+.settings-panel h2 svg { flex: none; color: var(--accent); }
+.settings-panel h3 { margin: 0; font-size: 1.02rem; }
+.settings-panel p { margin-block: .6rem 1rem; color: var(--muted); line-height: 1.5; }
+.settings-panel p:last-child { margin-block-end: 0; }
+
+.settings-fields {
+  display: grid;
+  gap: .9rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.settings-fields input, .settings-panel input[type='date'] { width: 100%; min-width: 0; }
+.settings-panel input[type='date'] { max-width: 20rem; }
+
+.settings-subsection {
+  border-block-start: 1px solid var(--line);
+  margin-block-start: 1.1rem;
+  padding-block-start: 1.1rem;
+}
+
+.settings-check {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding-block: .35rem;
+  gap: .65rem;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-check input {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  margin: 0;
+  accent-color: var(--spark);
+}
+
+.settings-panel form > .button { margin-block-start: .7rem; }
+.settings-panel .settings-note { font-size: .88rem; }
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin-block-start: 1.1rem;
+}
+
+.settings-export-actions { display: grid; gap: .6rem; }
+.settings-export-actions .button { width: 100%; justify-content: flex-start; text-align: start; }
+
+.settings-feedback {
+  margin: .65rem 0 0;
+  max-width: 44ch;
+  color: var(--accent);
+  line-height: 1.45;
+}
+
+.settings-panel .settings-feedback { color: var(--accent); }
+.settings-feedback.settings-error { color: var(--error-ink); }
+
+.settings-panel .settings-install-status {
+  border-radius: .7rem;
+  padding: .65rem .8rem;
+  background: var(--wash);
+}
+
+.settings-panel .settings-install-ready {
+  color: var(--success);
+  background-color: var(--success-bg);
+  font-weight: 650;
+}
+
+@media (min-width: 540px) {
+  .settings-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 800px) {
+  .settings-grid { grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); }
+}
