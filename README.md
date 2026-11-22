@@ -70,6 +70,8 @@ On your phone, open the **Network** URL printed in the terminal. Use Safari on i
 
 Browser storage belongs to a specific browser and address, including the protocol and port. To move your records to an HTTPS address or another device, use **Settings → Download JSON backup**, then **Restore backup** at the destination. A calendar file contains upcoming reminders at your selected time. Import it into your calendar and replace that import when the schedule changes. Alert delivery follows your calendar’s settings.
 
+To update an installed copy, connect to the Mac’s Wi-Fi and open **Settings → Install Fit30 → Check for update**. Choose **Apply update**. For an earlier version, open `index.html?fit30-update=1` at the same Fit30 address in Chrome. The update keeps your saved workouts and settings.
+
 ## Workout walkthrough
 
 Today offers **Resume workout** for a saved session and **Continue plan** for the earliest unfinished workout that has come due. Reopening the app mid-workout takes you back to the current exercise with its timer paused at the latest saved checkpoint. After completing a session, Today shows that workout for the rest of the local day. Calendar records the original dates and the actual workout history. Scheduled rest days still offer recovery and an optional walk.
@@ -80,7 +82,7 @@ The 30-minute target is the sum of the original exercise budgets. A 30-second re
 
 Open a tutorial to pause the workout timer and see its original movement guide and written cues offline. Tap **Play video** to stream the YouTube tutorial in Fit30. If the embedded player stalls or reports a playback error, use the local guide or open the video in YouTube when you have internet.
 
-In **Settings → In-workout timer**, enable sound or vibration and use **Test alert** to check them on your phone. When the workout is visible, Fit30 requests that the screen stay awake during active exercise and rest timers where the device supports it. A visual cue appears at the end of a countdown. Fit30 also provides calendar exports for closed-app reminders.
+In **Settings → Reminders and alerts → In-workout timer**, enable sound or vibration and use **Test alert** to check them on your phone. When the workout is visible, Fit30 requests that the screen stay awake during active exercise and rest timers where the device supports it. A visual cue appears at the end of a countdown. Fit30 also provides calendar exports for closed-app reminders.
 
 ## Track progress by exercise
 

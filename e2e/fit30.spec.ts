@@ -330,6 +330,78 @@ test('resumes an interrupted offline download and saves progress without the Mac
   expect([...origins]).toEqual([new URL(url).origin]);
 });
 
+test('applies an offline update with an old tab open and keeps workout history', async ({ page, context }) => {
+  const [shell, worker] = await Promise.all([readFile('dist/index.html', 'utf8'), readFile('dist/sw.js', 'utf8')]);
+  const oldShell = shell.replace('</head>', '<meta name="fit30-previous-shell" content="true"></head>');
+  const legacyAsset = '/assets/previous-fit30.js';
+  const oldWorker = worker
+    .replace(/^const VERSION = .*;$/m, 'const VERSION = "previous-fit30";')
+    .replace(/^const ASSETS = \[(.*)\];$/m, '$&\nASSETS.push("assets/previous-fit30.js");');
+  let previous = true;
+  let interruptUpdate = false;
+
+  const server = await preview({
+    configFile: false,
+    preview: { host: '127.0.0.1', port: 0, strictPort: true },
+    plugins: [{
+      name: 'fit30-version-switch',
+      configurePreviewServer({ middlewares }) {
+        middlewares.use((request, response, next) => {
+          if (request.url === '/sw.js' && interruptUpdate) response.writeHead(503).end();
+          else if (request.url === '/sw.js' && previous) response.writeHead(200, { 'Content-Type': 'text/javascript' }).end(oldWorker);
+          else if (request.url === '/index.html' && previous) response.writeHead(200, { 'Content-Type': 'text/html' }).end(oldShell);
+          else if (request.url === legacyAsset && previous) response.writeHead(200, { 'Content-Type': 'text/javascript' }).end('// from the previous build');
+          else next();
+        });
+      },
+    }],
+  });
+
+  try {
+    const address = server.httpServer.address();
+    if (!address || typeof address === 'string') throw new Error('Test preview did not open a local port');
+    const url = `http://127.0.0.1:${address.port}/`;
+    await onBoard(page, '2026-11-20', '', url);
+    await finishScheduledWorkout(page);
+    await tab(page, 'Settings');
+    await expect(page.getByText('Ready for offline workouts')).toBeVisible();
+    await page.reload();
+    await expect(page.locator('meta[name="fit30-previous-shell"]')).toHaveCount(1);
+    const previousWorker = await page.evaluateHandle(() => navigator.serviceWorker.controller);
+
+    previous = false;
+    interruptUpdate = true;
+    const update = await context.newPage();
+    await update.clock.setFixedTime(testInstant);
+    await update.goto(`${url}index.html?fit30-update=1`);
+    await expect(update.getByRole('heading', { name: 'Update Fit30' })).toBeVisible();
+    await button(update, 'Apply update').click();
+    await expect(update.getByRole('alert')).toHaveText(/update couldn’t finish/);
+    await expect.poll(() => page.evaluate((worker) => navigator.serviceWorker.controller === worker, previousWorker)).toBe(true);
+
+    interruptUpdate = false;
+    await button(update, 'Try update again').click();
+    await expect(update).toHaveURL(url);
+    await expect.poll(() => page.evaluate((worker) => navigator.serviceWorker.controller !== worker, previousWorker)).toBe(true);
+    await expect(button(update, 'View workout')).toBeVisible();
+    await tab(update, 'Settings');
+    await expect(button(update, 'Test alert')).toBeVisible();
+    await expect(update.getByRole('link', { name: 'Check for update' })).toHaveAttribute('href', '/index.html?fit30-update=1');
+
+    await context.setOffline(true);
+    expect(await page.evaluate(async (path) => (await fetch(path)).text(), legacyAsset)).toBe('// from the previous build');
+    const reopened = await context.newPage();
+    await reopened.clock.setFixedTime(testInstant);
+    await reopened.goto(url);
+    await expect(reopened.locator('meta[name="fit30-previous-shell"]')).toHaveCount(0);
+    await expect(button(reopened, 'View workout')).toBeVisible();
+    await tab(reopened, 'Settings');
+    await expect(button(reopened, 'Test alert')).toBeVisible();
+  } finally {
+    await server.close();
+  }
+});
+
 test('backup restore and measurement exports preserve data and reminder time', async ({ page, browser }) => {
   await onBoard(page, '2026-11-20', '18:30');
   await button(page, 'Log measurement').click();

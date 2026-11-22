@@ -5,6 +5,12 @@ const cachePrefix = `fit30-shell:${scope.pathname}:`;
 const cacheName = `${cachePrefix}${VERSION}`;
 const urls = new Set(ASSETS.map((asset) => new URL(asset, scope).href));
 const indexUrl = new URL('index.html', scope).href;
+const assetsPath = new URL('assets/', scope).pathname;
+const activeMarker = new URL('fit30-active-cache', scope).href;
+
+async function otherShellCaches() {
+  return (await caches.keys()).filter((name) => name.startsWith(cachePrefix) && name !== cacheName);
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -17,11 +23,21 @@ self.addEventListener('install', (event) => {
   })());
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'APPLY_FIT30_UPDATE') event.waitUntil(self.skipWaiting());
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    const names = await caches.keys();
-    await Promise.all(names.filter((name) => name.startsWith(cachePrefix) && name !== cacheName)
-      .map((name) => caches.delete(name)));
+    const older = await otherShellCaches();
+    // An open tab from the last build may still request one of its lazy-loaded assets.
+    let previous = older[0];
+    for (const name of older) {
+      if (await caches.match(activeMarker, { cacheName: name })) previous = name;
+    }
+    await Promise.all(older.filter((name) => name !== previous).map((name) => caches.delete(name)));
+    const cache = await caches.open(cacheName);
+    await cache.put(activeMarker, new Response()).catch(() => {});
     await self.clients.claim();
   })());
 });
@@ -32,13 +48,24 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== scope.origin) return;
   const navigation = event.request.mode === 'navigate';
   const path = url.pathname;
+  // The update link uses index.html with a query so it reaches the current preview.
   const appPage = navigation && (path === scope.pathname || url.href === indexUrl);
-  if (!appPage && !urls.has(url.href)) return;
+  const bundledAsset = !navigation && path.startsWith(assetsPath) && !url.search;
+  if (!appPage && !urls.has(url.href) && !bundledAsset) return;
 
   // Keep HTML and its hashed assets on the same version until the next worker takes over.
   event.respondWith((async () => {
     const cache = await caches.open(cacheName);
     // The precache stores fixed same-origin files; navigation and module requests can send different headers.
-    return await cache.match(appPage ? indexUrl : url.href, { ignoreVary: true }) ?? await fetch(event.request);
+    const cached = await cache.match(appPage ? indexUrl : url.href, { ignoreVary: true });
+    if (cached) return cached;
+
+    if (bundledAsset) {
+      for (const older of await otherShellCaches()) {
+        const legacy = await caches.match(url.href, { cacheName: older, ignoreVary: true });
+        if (legacy) return legacy;
+      }
+    }
+    return fetch(event.request);
   })());
 });

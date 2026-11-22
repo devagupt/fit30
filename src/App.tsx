@@ -175,7 +175,7 @@ export function App() {
           ) : tab === 'progress' ? (
             <ProgressScreen key={`${run.id}:${measurementRequested}`} data={data} run={run} today={today} onSave={commit} busy={busy} initialMeasurement={measurementRequested} />
           ) : tab === 'settings' ? (
-            <SettingsScreen key={run.id} data={data} run={run} offlineStatus={offlineStatus} appInstalled={appInstalled}
+            <SettingsScreen key={run.id} data={data} run={run} online={online} offlineStatus={offlineStatus} appInstalled={appInstalled}
               onInstall={install} onRetryOffline={retryOffline} onSave={commit} busy={busy} />
           ) : (
             <TodayScreen data={data} run={run} today={today} busy={busy} onStart={(day, id) => void beginWorkout(day, id)}

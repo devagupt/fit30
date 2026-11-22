@@ -147,6 +147,8 @@ progress { accent-color: var(--spark); }
 .app-nav-mobile { display: none; }
 
 .app-content { padding-top: 35px; padding-bottom: 48px; }
+.app-update { max-width: 560px; }
+.app-update-actions { display: grid; gap: 12px; }
 .app-with-player .app-content { padding-top: 22px; }
 .app-offline {
   display: inline-flex;

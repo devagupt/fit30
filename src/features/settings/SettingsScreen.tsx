@@ -7,6 +7,7 @@ import { isProgramStartDate, localDate } from '../../domain/dates';
 import { type Fit30Data, type Preferences, type ProgramRun, preferencesSchema } from '../../domain/model';
 import { startProgram } from '../../domain/workout';
 import { Dialog } from '../../ui/Dialog';
+import { updateUrl } from '../../ui/UpdateScreen';
 import type { OfflineStatus } from '../../ui/useConnection';
 import { signalTimerEnd } from '../player/timerAlert';
 import { BackupRestore } from './BackupRestore';
@@ -15,6 +16,7 @@ import './settings.css';
 interface SettingsScreenProps {
   data: Fit30Data;
   run: ProgramRun;
+  online: boolean;
   offlineStatus: OfflineStatus;
   appInstalled: boolean;
   onInstall?: () => void;
@@ -55,7 +57,7 @@ function setPreferences(data: Fit30Data, runId: string, preferences: Preferences
   };
 }
 
-export function SettingsScreen({ data, run, offlineStatus, appInstalled, onInstall, onRetryOffline, onSave, busy }: SettingsScreenProps) {
+export function SettingsScreen({ data, run, online, offlineStatus, appInstalled, onInstall, onRetryOffline, onSave, busy }: SettingsScreenProps) {
   const [preferenceChanges, setPreferenceChanges] = useState<Partial<Preferences>>({});
   const [startDateChange, setStartDateChange] = useState<string | null>(null);
   const [settingsFeedback, setSettingsFeedback] = useState<Feedback | null>(null);
@@ -275,6 +277,7 @@ export function SettingsScreen({ data, run, offlineStatus, appInstalled, onInsta
             <p role="status" className={`settings-install-status${offlineStatus === 'ready' ? ' settings-install-ready' : ''}`}>{offlineCopy[offlineStatus]}</p>
             {onRetryOffline && <button type="button" className="button button-secondary" onClick={onRetryOffline}>Retry offline setup</button>}
             {onInstall && <button type="button" className="button button-primary" onClick={onInstall}>Install on this device</button>}
+            {online && offlineStatus === 'ready' && <a className="button button-secondary" href={updateUrl}>Check for update</a>}
             {offlineStatus === 'ready' && !appInstalled && !onInstall && (
               <p>On Android, use Chrome’s menu to install. On iPhone, use Add to Home Screen in Safari.</p>
             )}
