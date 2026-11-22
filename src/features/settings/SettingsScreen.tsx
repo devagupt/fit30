@@ -3,8 +3,9 @@ import { Bell, CalendarDays, Download, HardDrive, Smartphone } from 'lucide-reac
 import { serializeBackup } from '../../data/backup';
 import { createCalendarExport, downloadText, measurementsCsv, workoutsCsv } from '../../data/exports';
 import type { DataUpdate } from '../../data/storage';
-import { isProgramStartDate, localDate } from '../../domain/dates';
+import { isProgramStartDate, localDate, weekdays, type Weekday } from '../../domain/dates';
 import { type Fit30Data, type Preferences, type ProgramRun, preferencesSchema } from '../../domain/model';
+import { recoveryWeekday, rescheduleRecovery } from '../../domain/schedule';
 import { startProgram } from '../../domain/workout';
 import { Dialog } from '../../ui/Dialog';
 import { updateUrl } from '../../ui/UpdateScreen';
@@ -60,6 +61,7 @@ function setPreferences(data: Fit30Data, runId: string, preferences: Preferences
 export function SettingsScreen({ data, run, online, offlineStatus, appInstalled, onInstall, onRetryOffline, onSave, busy }: SettingsScreenProps) {
   const [preferenceChanges, setPreferenceChanges] = useState<Partial<Preferences>>({});
   const [startDateChange, setStartDateChange] = useState<string | null>(null);
+  const [closedWeekdayChange, setClosedWeekdayChange] = useState<Weekday | null>(null);
   const [settingsFeedback, setSettingsFeedback] = useState<Feedback | null>(null);
   const [alertFeedback, setAlertFeedback] = useState<Feedback | null>(null);
   const [testingAlert, setTestingAlert] = useState(false);
@@ -71,6 +73,8 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
   const saving = useRef(false);
   const fields = { ...data.preferences, ...preferenceChanges };
   const startDate = startDateChange ?? run.startDate;
+  const savedRecoveryDay = recoveryWeekday(run);
+  const closedWeekday = closedWeekdayChange ?? savedRecoveryDay;
   const lockedDate = hasRunRecords(data, run.id);
   const preferencesChanged = Object.keys(preferenceChanges).length > 0;
 
@@ -156,11 +160,36 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
         if (latest.activeRunId !== run.id || hasRunRecords(latest, run.id)) {
           throw new Error('This program now has saved records. Start a new program to choose a new date.');
         }
-        return { ...latest, runs: latest.runs.map((current) => current.id === run.id ? { ...current, startDate } : current) };
+        return { ...latest, runs: latest.runs.map((current) => {
+          if (current.id !== run.id) return current;
+          const moved = { ...current, startDate, schedule: undefined };
+          return current.schedule ? rescheduleRecovery(moved, latest.sessions, startDate, current.schedule.closedWeekday) : moved;
+        }) };
       });
       if (saved) {
         setStartDateChange(null);
         setScheduleFeedback({ text: 'Start date saved.' });
+      }
+    } finally {
+      saving.current = false;
+    }
+  }
+
+  async function saveRecoveryDay(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy || saving.current || closedWeekday === savedRecoveryDay) return;
+
+    saving.current = true;
+    try {
+      const saved = await onSave((latest) => {
+        if (latest.activeRunId !== run.id) throw new Error('Your active program changed. Open Settings again and retry.');
+        return { ...latest, runs: latest.runs.map((current) => current.id === run.id
+          ? rescheduleRecovery(current, latest.sessions, localDate(current.timezone), closedWeekday)
+          : current) };
+      });
+      if (saved) {
+        setClosedWeekdayChange(null);
+        setScheduleFeedback({ text: `Recovery day set to ${closedWeekday}.` });
       }
     } finally {
       saving.current = false;
@@ -179,7 +208,12 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
     try {
       const saved = await onSave((latest) => {
         if (latest.activeRunId !== run.id) throw new Error('A different program has already been started.');
-        return startProgram(latest, restartDate, latest.preferences.timezone);
+        const restarted = startProgram(latest, restartDate, latest.preferences.timezone);
+        const closure = latest.runs.find((entry) => entry.id === latest.activeRunId)?.schedule?.closedWeekday;
+        if (!closure) return restarted;
+        return { ...restarted, runs: restarted.runs.map((entry) => entry.id === restarted.activeRunId
+          ? rescheduleRecovery(entry, restarted.sessions, restartDate, closure)
+          : entry) };
       });
       if (saved) {
         setRestartDate(null);
@@ -248,6 +282,15 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
           </section>
           <section className="panel settings-panel" aria-labelledby="program-settings-heading">
             <h2 id="program-settings-heading"><CalendarDays size={21} aria-hidden="true" /> Program schedule</h2>
+            <form onSubmit={(event) => void saveRecoveryDay(event)}>
+              <label className="field">Gym closed on
+                <select value={closedWeekday} disabled={busy} onChange={(event) => { setClosedWeekdayChange(event.target.value as Weekday); setScheduleFeedback(null); }}>
+                  {weekdays.map((weekday) => <option key={weekday}>{weekday}</option>)}
+                </select>
+              </label>
+              <p className="settings-note">Move upcoming recovery days to this weekday. Saved workouts keep their dates.</p>
+              <button type="submit" className="button button-secondary" disabled={busy || closedWeekday === savedRecoveryDay}>Save recovery day</button>
+            </form>
             <form onSubmit={(event) => void saveStartDate(event)}>
               <label className="field">Start date<input type="date" value={startDate} onChange={(event) => { setStartDateChange(event.target.value); setScheduleFeedback(null); }} disabled={lockedDate || busy} aria-describedby={lockedDate ? 'locked-date-hint' : undefined} required max="9999-12-02" /></label>
               {lockedDate

@@ -3,6 +3,8 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useFit30Data } from './data/useFit30Data';
 import { localDate } from './domain/dates';
 import { newId } from './domain/model';
+import { getDay } from './domain/program';
+import { isGymClosed } from './domain/schedule';
 import { activeWorkout, createSession, updateSession, type WorkoutAction } from './domain/workout';
 import { Onboarding } from './features/onboarding/Onboarding';
 import { TutorialDialog } from './features/player/TutorialDialog';
@@ -65,12 +67,15 @@ export function App() {
   const main = useRef<HTMLElement>(null);
   const run = data?.runs.find((entry) => entry.id === data.activeRunId);
   const savedWorkout = data ? activeWorkout(data) : undefined;
-  const playerSession = playerId === undefined || playerId === savedWorkout?.id ? savedWorkout : undefined;
   const today = useToday(run?.timezone ?? data?.preferences.timezone ?? 'Asia/Kolkata');
+  const autoResume = run && savedWorkout && isGymClosed(run, today) && getDay(savedWorkout.plannedDayNumber)?.day_type === 'gym'
+    ? undefined : savedWorkout;
+  const initialPlayerId = autoResume?.id ?? null;
+  const playerSession = playerId === undefined ? autoResume : playerId === savedWorkout?.id ? savedWorkout : undefined;
 
   useEffect(() => {
-    if (data && playerId === undefined) setPlayerId(savedWorkout?.id ?? null);
-  }, [data, playerId, savedWorkout?.id]);
+    if (data && playerId === undefined) setPlayerId(initialPlayerId);
+  }, [data, initialPlayerId, playerId]);
 
   function focusContent() {
     window.requestAnimationFrame(() => {

@@ -39,6 +39,7 @@ Program root includes `schema_version`, `program_id`, `program_name`, `program_d
 - Count only 26 scheduled gym days in the 30-day completion denominator, not 30 total dates.
 - Planned rest days do not break adherence streak; missing an optional walk is not a failure.
 - Store program run `start_date` separately from `start_date:null` seed definition.
+- A run can store its chosen gym closure weekday, the local date the change takes effect, and the 30 scheduled date labels. Gym and recovery entries each keep their original order, and each saved workout keeps its scheduled date. Runs without this setting use the original start date offsets.
 - When program restarts, create a new run; old run retained unless user deliberately deletes it.
 
 ## Example normalization

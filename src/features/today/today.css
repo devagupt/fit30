@@ -5,29 +5,31 @@
 .today-main, .today-side { display: grid; gap: 24px; min-width: 0; }
 
 .today-hero {
-  position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
   min-height: 300px;
-  align-items: center;
   overflow: hidden;
-  isolation: isolate;
   border: 1px solid #4e3b51;
   border-radius: 17px;
-  background: var(--shell);
+  background: linear-gradient(135deg, var(--shell), #241a28);
   color: var(--ink);
   box-shadow: 0 16px 44px #0c081066;
 }
-.today-hero::before {
+.today-hero-photo {
+  position: relative;
+  grid-area: 1 / 2;
+  min-width: 0;
+  background: #271e2b;
+}
+.today-hero-photo img {
   position: absolute;
-  content: '';
-  z-index: -1;
   inset: 0;
-  background: linear-gradient(104deg, #150e18ed 0%, #150e187d 43%, #150e1810 71%, transparent 100%), url('/studio-hero-duo.jpg') right 8% / cover no-repeat;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
 }
-.today-hero[data-rest='true']::before {
-  background: linear-gradient(115deg, #1c1522, #342739);
-}
-.today-hero-content { width: min(100%, 540px); padding: 27px 30px; }
+.today-hero-content { grid-area: 1 / 1; align-self: center; min-width: 0; padding: 24px; }
 .hero-day {
   width: fit-content;
   margin-bottom: 13px;
@@ -41,7 +43,7 @@
   letter-spacing: .06em;
   text-transform: uppercase;
 }
-.today-hero h2 { font-family: var(--display); font-size: clamp(2.5rem, 6.1vw, 3.8rem); letter-spacing: -0.015em; font-weight: 400; line-height: 1.04; }
+.today-hero h2 { font-family: var(--display); font-size: clamp(2.15rem, 4.6vw, 3.35rem); letter-spacing: -0.015em; font-weight: 400; line-height: 1.04; }
 .today-hero p { margin-top: 6px; color: #e3d5de; }
 .today-hero .hero-scheduled { font-size: .8125rem; font-weight: 650; color: var(--accent); }
 .hero-meta { display: flex; flex-wrap: wrap; column-gap: 17px; row-gap: 6px; margin: 16px 0 17px; }
@@ -142,9 +144,14 @@
   .week-days { max-width: 390px; }
 }
 
+@media (max-width: 580px) {
+  .today-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .today-hero-photo { grid-area: 1 / 1; aspect-ratio: 16 / 9; }
+  .today-hero-content { grid-area: 2 / 1; }
+}
 @media (max-width: 480px) {
   .today-heading time { font-size: 0.875rem; }
-  .today-hero { min-height: 250px; border-radius: 16px; }
+  .today-hero { border-radius: 16px; }
   .today-hero-content { padding: 20px; }
   .today-hero h2 { max-width: 97%; }
   .today-hero p { max-width: 86%; font-size: 0.93rem; }

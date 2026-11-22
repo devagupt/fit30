@@ -1,11 +1,13 @@
 import { Check, ChevronLeft, ChevronRight, Circle, CircleCheck, CircleDot, CirclePause, CirclePlay, Minus, Moon } from "lucide-react";
 import { useState } from "react";
-import { addDays, dayNumberOn, formatDate, localDate, scheduledDate } from "../../domain/dates";
+import { addDays, dayNumberOn, formatDate, localDate, programEndDate, scheduledDate } from "../../domain/dates";
 import type { ExerciseLog, Fit30Data, ProgramRun, Session, SetLog } from "../../domain/model";
-import { formatPrescription, getDay, getExercise, program, type ExerciseBlock, type ProgramDay } from "../../domain/program";
+import { formatPrescription, getDay, getExercise, type ExerciseBlock, type ProgramDay } from "../../domain/program";
 import { daySummary, type DayStatus } from "../../domain/progress";
+import { isGymClosed } from "../../domain/schedule";
 import { completedExerciseSeconds } from "../../domain/workout";
 import { dayStatusText as statusLabels } from "../../ui/Status";
+import { workoutPhoto } from "../../ui/workoutPhoto";
 import { formatClock } from "../player/formatClock";
 import "./calendar.css";
 
@@ -156,6 +158,8 @@ function DayDetail({ day, run, today, data, onStart, onTutorial }: CalendarScree
         </button>
       )}
 
+      <img className="fit-calendar-photo" src={workoutPhoto(day.day_number)} alt="" loading="lazy" />
+
       <h3>{session ? "Exercises and logs" : "Planned exercises"}</h3>
       <ol className="fit-calendar-exercises">
         {day.exercise_blocks.map((block, index) => <ExerciseLine key={block.order} block={block} log={session?.exercises[index]} onTutorial={onTutorial} />)}
@@ -175,7 +179,7 @@ function DayDetail({ day, run, today, data, onStart, onTutorial }: CalendarScree
 function RunCalendar(props: CalendarScreenProps) {
   const { run, data } = props;
   const today = run.id === data.activeRunId ? props.today : localDate(run.timezone);
-  const end = scheduledDate(run, program.program_duration_days);
+  const end = programEndDate(run);
   const anchor = today < run.startDate ? run.startDate : today > end ? end : today;
   const [chosenDate, setChosenDate] = useState<string | null>(() =>
     props.initialDay && run.id === data.activeRunId ? scheduledDate(run, props.initialDay) : null);
@@ -214,12 +218,13 @@ function RunCalendar(props: CalendarScreenProps) {
             const dayNumber = dayNumberOn(run, date);
             const day = dayNumber === null ? undefined : getDay(dayNumber);
             const dayOfMonth = Number(date.slice(-2));
-            if (!day) return <span key={date} className="fit-calendar-cell fit-calendar-cell--empty" aria-hidden="true">{dayOfMonth}</span>;
-            const { status } = daySummary(day, run, data.sessions, today);
+            const closed = !day && date >= run.startDate && date <= end && isGymClosed(run, date);
+            if (!day && !closed) return <span key={date} className="fit-calendar-cell fit-calendar-cell--empty" aria-hidden="true">{dayOfMonth}</span>;
+            const status = day ? daySummary(day, run, data.sessions, today).status : 'rest';
             return (
               <button
                 key={date} type="button" className="fit-calendar-cell" data-state={status}
-                aria-label={`${formatDate(date)}, Day ${day.day_number}, ${statusLabels[status]}`}
+                aria-label={day ? `${formatDate(date)}, Day ${day.day_number}, ${statusLabels[status]}` : `${formatDate(date)}, Gym closed`}
                 aria-current={date === today ? "date" : undefined} aria-pressed={date === selectedDate} aria-controls="calendar-day"
                 onClick={() => openDate(date)}
               >
@@ -235,6 +240,13 @@ function RunCalendar(props: CalendarScreenProps) {
         </ul>
       </section>
       {selectedDay && <DayDetail key={selectedDay.day_number} {...props} today={today} day={selectedDay} />}
+      {!selectedDay && isGymClosed(run, selectedDate) && (
+        <article id="calendar-day" className="panel fit-calendar-day" aria-labelledby="calendar-day-title">
+          <p className="eyebrow">{formatDate(selectedDate)}</p>
+          <h2 id="calendar-day-title" tabIndex={-1}>Gym closed</h2>
+          <p className="fit-calendar-meta">Your next workout will be ready the next day your gym is open.</p>
+        </article>
+      )}
     </div>
   );
 }
@@ -242,7 +254,7 @@ function RunCalendar(props: CalendarScreenProps) {
 export function CalendarScreen(props: CalendarScreenProps) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const run = props.data.runs.find((entry) => entry.id === selectedRunId) ?? props.run;
-  const last = scheduledDate(run, program.program_duration_days);
+  const last = programEndDate(run);
   const runs = props.data.runs.slice().sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 
   return (

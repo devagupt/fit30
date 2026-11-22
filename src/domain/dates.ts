@@ -1,6 +1,12 @@
 import { program } from "./program";
 
-type Schedule = { startDate: string };
+export const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+export type Weekday = typeof weekdays[number];
+
+type Schedule = {
+  startDate: string;
+  schedule?: { closedWeekday: Weekday; effectiveFrom: string; dates: string[] };
+};
 
 export function isLocalDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith("0000")) return false;
@@ -43,6 +49,10 @@ function dateAtUtcMidnight(value: string): Date {
   return new Date(`${value}T00:00:00Z`);
 }
 
+export function weekdayOn(value: string): Weekday {
+  return weekdays[dateAtUtcMidnight(value).getUTCDay()];
+}
+
 export function addDays(value: string, amount: number): string {
   if (!Number.isSafeInteger(amount)) throw new RangeError("Day offset must be a whole number");
   const date = dateAtUtcMidnight(value);
@@ -56,15 +66,25 @@ export function scheduledDate(run: Schedule, dayNumber: number): string {
   if (!Number.isInteger(dayNumber) || dayNumber < 1 || dayNumber > program.program_duration_days) {
     throw new RangeError("Invalid program day");
   }
-  return addDays(run.startDate, dayNumber - 1);
+  return run.schedule?.dates[dayNumber - 1] ?? addDays(run.startDate, dayNumber - 1);
 }
 
 export function dayNumberOn(run: Schedule, value: string): number | null {
+  const date = dateAtUtcMidnight(value);
+  if (run.schedule) {
+    const position = run.schedule.dates.indexOf(value);
+    return position < 0 ? null : position + 1;
+  }
   // Both UTC midnights represent date labels in the same artificial calendar.
   // The subtraction never compares real instants in the user's time zone.
-  const difference = dateAtUtcMidnight(value).getTime() - dateAtUtcMidnight(run.startDate).getTime();
+  const difference = date.getTime() - dateAtUtcMidnight(run.startDate).getTime();
   const dayNumber = difference / 86_400_000 + 1;
   return dayNumber >= 1 && dayNumber <= program.program_duration_days ? dayNumber : null;
+}
+
+export function programEndDate(run: Schedule): string {
+  return run.schedule?.dates.reduce((last, date) => date > last ? date : last, run.startDate)
+    ?? scheduledDate(run, program.program_duration_days);
 }
 
 export function formatDate(value: string, options?: Intl.DateTimeFormatOptions): string {

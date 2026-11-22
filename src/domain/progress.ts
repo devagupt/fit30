@@ -1,6 +1,7 @@
 import { addDays, dayNumberOn, localDate, scheduledDate } from "./dates";
 import type { ExerciseLog, ProgramRun, Session } from "./model";
 import { getDay, getExercise, program, type ProgramDay } from "./program";
+import { isGymClosed } from "./schedule";
 import { completedExerciseSeconds } from "./workout";
 
 export type DayStatus = "scheduled" | "in_progress" | "partial" | "completed" | "completed_with_skips" | "missed" | "rest";
@@ -48,6 +49,7 @@ export function workoutForToday(run: ProgramRun, sessions: Session[], today: str
     const eligibleWalks = runSessions.filter((session) => session.status === "completed" || isResumable(session));
     return { day: scheduled, session: daySummary(scheduled, run, eligibleWalks, today).session };
   }
+  if (isGymClosed(run, today)) return undefined;
 
   const attempts = runSessions.flatMap((session) => {
     const day = getDay(session.plannedDayNumber);

@@ -235,6 +235,55 @@ test('an optional walk stays a rest day and a make-up partial attempt is resumab
   await expect(page.getByRole('heading', { name: 'Stationary cycling' })).toBeVisible();
 });
 
+test('moves recovery to Tuesday and changes the daily photo offline while keeping workout history', async ({ page, context }, info) => {
+  const monday = new Date('2026-11-16T09:30:00Z');
+  await onBoard(page, '2026-11-16', '18:30', '/', monday);
+  await finishScheduledWorkout(page);
+
+  await setLocalTime(page, new Date('2026-11-22T09:30:00Z'));
+  await expect(page.getByRole('heading', { name: 'Rest day' })).toBeVisible();
+  await tab(page, 'Settings');
+  const closed = page.getByLabel('Gym closed on');
+  await expect(closed).toHaveValue('Sunday');
+  await closed.selectOption('Tuesday');
+  await button(page, 'Save recovery day').click();
+  await expect(page.getByText('Recovery day set to Tuesday.')).toBeVisible();
+  await expect(page.getByText('Ready for offline workouts')).toBeVisible();
+  await tab(page, 'Today');
+  const photo = page.locator('.today-hero-photo img');
+  await expect(photo).toHaveAttribute('src', '/workout-photos/day-08.webp');
+  await button(page, 'Continue plan').click();
+  await expect(button(page, 'Pause timer')).toBeVisible();
+
+  await context.setOffline(true);
+  const tuesday = new Date('2026-11-24T09:30:00Z');
+  await page.clock.setFixedTime(tuesday);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Rest day' })).toBeVisible();
+  await expect(button(page, 'Start optional walk')).toBeVisible();
+  await expect(photo).toHaveAttribute('src', '/workout-photos/day-07.webp');
+  await expect.poll(() => photo.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await page.screenshot({ path: info.outputPath('tuesday-recovery.png'), scale: 'css' });
+
+  const wednesday = new Date('2026-11-25T09:30:00Z');
+  await setLocalTime(page, wednesday);
+  await expect(button(page, 'Resume workout')).toBeVisible();
+  await expect(photo).toHaveAttribute('src', '/workout-photos/day-10.webp');
+  await expect.poll(() => photo.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await page.screenshot({ path: info.outputPath('wednesday-workout.png'), scale: 'css' });
+
+  await tab(page, 'Calendar');
+  await page.getByRole('button', { name: /16 Nov, Day 1, Completed/ }).click();
+  await expect(page.getByRole('heading', { name: 'Exercises and logs' })).toBeVisible();
+  await expect(page.locator('.fit-calendar-photo')).toHaveAttribute('src', '/workout-photos/day-01.webp');
+  await page.reload();
+  await expect(button(page, 'Resume timer')).toBeVisible();
+  await button(page, 'Exit workout').click();
+  await button(page, 'Save partial').click();
+  await tab(page, 'Settings');
+  await expect(closed).toHaveValue('Tuesday');
+});
+
 test('restarting archives the previous run and keeps its saved workout history', async ({ page }) => {
   await onBoard(page, '2026-11-20');
   await button(page, 'Start workout').click();

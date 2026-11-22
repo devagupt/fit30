@@ -1,9 +1,11 @@
 import { Activity, Bike, CalendarDays, Check, CirclePlay, Clock3, Dumbbell, Footprints, Heart, Ruler, ShieldCheck } from 'lucide-react';
-import { dayNumberOn, formatDate } from '../../domain/dates';
+import { dayNumberOn, formatDate, scheduledDate } from '../../domain/dates';
 import type { Fit30Data, ProgramRun, Session } from '../../domain/model';
 import { daySummary, progressSummary, workoutForToday } from '../../domain/progress';
 import { categoryLabel, formatPrescription, getDay, getExercise, program, type ExerciseBlock, type ProgramDay } from '../../domain/program';
+import { isGymClosed } from '../../domain/schedule';
 import { dayStatusText, Status } from '../../ui/Status';
+import { workoutPhoto } from '../../ui/workoutPhoto';
 import './today.css';
 
 interface TodayProps {
@@ -57,9 +59,11 @@ function ExerciseRow({ block, session, onTutorial }: { block: ExerciseBlock; ses
 }
 
 function WeekPanel({ day, currentWeek, data, run, today, onCalendar }: { day: ProgramDay; currentWeek: boolean; data: Fit30Data; run: ProgramRun; today: string; onCalendar: () => void }) {
-  const week = program.days.filter((entry) => entry.week_number === day.week_number);
-  const completed = week.filter((entry) => daySummary(entry, run, data.sessions, today).status.startsWith('completed')).length;
-  const gymDays = week.filter((entry) => entry.day_type === 'gym').length;
+  const week = program.days.filter((entry) => entry.week_number === day.week_number)
+    .map((entry) => ({ entry, summary: daySummary(entry, run, data.sessions, today) }))
+    .sort((left, right) => left.summary.scheduledLocalDate.localeCompare(right.summary.scheduledLocalDate));
+  const completed = week.filter(({ summary }) => summary.status.startsWith('completed')).length;
+  const gymDays = week.filter(({ entry }) => entry.day_type === 'gym').length;
   return (
     <section className="panel week-panel" aria-label="This program week">
       <div className="week-header">
@@ -70,8 +74,7 @@ function WeekPanel({ day, currentWeek, data, run, today, onCalendar }: { day: Pr
         <span className="week-icon"><CalendarDays size={21} aria-hidden="true" /></span>
       </div>
       <ol className="week-days" style={{ gridTemplateColumns: `repeat(${week.length}, minmax(0, 1fr))` }}>
-        {week.map((entry) => {
-          const summary = daySummary(entry, run, data.sessions, today);
+        {week.map(({ entry, summary }) => {
           const current = summary.scheduledLocalDate === today;
           return (
             <li key={entry.day_number} title={`Day ${entry.day_number}, ${dayStatusText[summary.status]}`}>
@@ -99,14 +102,19 @@ export function TodayScreen({ data, run, today, busy, onStart, onCalendar, onMea
     const upcoming = today < run.startDate;
     const progress = progressSummary(run, data.sessions, today);
     const complete = progress.completedOverall === progress.totalGymDays;
+    const closed = !upcoming && !complete && isGymClosed(run, today);
+    const firstWorkout = scheduledDate(run, 1);
     return (
       <div className="today-screen">
         <header className="page-heading today-heading"><h1>Today</h1><time dateTime={today}>{formatDate(today)}</time></header>
         <section className="today-hero">
+          <div className="today-hero-photo"><img src={workoutPhoto(calendarDay?.day_number ?? (closed ? 7 : 1))} alt="" /></div>
           <div className="today-hero-content">
-            <h2>{upcoming ? 'Your first workout' : complete ? 'Program complete' : 'You’re caught up'}</h2>
-            <p>{upcoming ? `Day 1 is ${formatDate(run.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.`
-              : complete ? `${progress.completedOverall} of ${progress.totalGymDays} gym days finished.` : 'Your next workout will appear on its scheduled day.'}</p>
+            <h2>{upcoming ? 'Your first workout' : complete ? 'Program complete' : closed ? 'Gym closed' : 'You’re caught up'}</h2>
+            <p>{upcoming ? `Day 1 is ${formatDate(firstWorkout, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.`
+              : complete ? `${progress.completedOverall} of ${progress.totalGymDays} gym days finished.`
+                : closed ? 'Take a recovery day. Your workout will be ready the next day your gym is open.'
+                  : 'Your next workout will appear on its scheduled day.'}</p>
             <button type="button" className="button hero-button" onClick={() => onCalendar()}>View calendar</button>
           </div>
         </section>
@@ -138,7 +146,8 @@ export function TodayScreen({ data, run, today, busy, onStart, onCalendar, onMea
       </header>
       <div className="today-grid">
         <div className="today-main">
-          <section className="today-hero" data-rest={restDay} aria-labelledby="today-session">
+          <section className="today-hero" aria-labelledby="today-session">
+            <div className="today-hero-photo"><img src={workoutPhoto(calendarDay?.day_number ?? day.day_number)} alt="" /></div>
             <div className="today-hero-content">
               <div className="hero-day">Day {day.day_number} of {program.program_duration_days}</div>
               <h2 id="today-session">{restDay ? 'Rest day' : day.session_name}</h2>

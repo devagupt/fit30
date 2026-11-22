@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isLocalDate, isProgramStartDate, isTimeZone, scheduledDate } from "./dates";
+import { isLocalDate, isProgramStartDate, isTimeZone, scheduledDate, weekdayOn, weekdays } from "./dates";
 import { getDay, getExercise, program, type ExerciseBlock } from "./program";
 
 const id = z.string().min(1).max(128).regex(/^[A-Za-z0-9_-]+$/);
@@ -24,7 +24,27 @@ const runSchema = z.object({
   timezone,
   createdAt: timestamp,
   archivedAt: timestamp.nullable(),
-}).strict();
+  schedule: z.object({
+    closedWeekday: z.enum(weekdays),
+    effectiveFrom: date,
+    dates: z.array(date).length(program.program_duration_days),
+  }).strict().optional(),
+}).strict().superRefine((run, context) => {
+  const { schedule } = run;
+  if (!schedule || schedule.dates.length !== program.program_duration_days || !schedule.dates.every(isLocalDate)) return;
+  const { dates, closedWeekday, effectiveFrom } = schedule;
+  const last = { gym: '', rest: '' };
+  const consistent = program.days.every((day, index) => {
+    const value = dates[index];
+    const ordered = value > last[day.day_type];
+    last[day.day_type] = value;
+    return ordered && value >= run.startDate && (value < effectiveFrom ||
+      (weekdayOn(value) === closedWeekday) === (day.day_type === 'rest'));
+  });
+  if (effectiveFrom < run.startDate || new Set(dates).size !== dates.length || !consistent) {
+    context.addIssue({ code: 'custom', message: 'Program dates must be unique and follow the chosen recovery schedule', path: ['schedule'] });
+  }
+});
 
 const setSchema = z.object({
   index: positiveInt,
