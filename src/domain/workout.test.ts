@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appDataSchema, emptyData, type Session } from "./model";
-import { allowedSubstitutions, canFinish, completedExerciseSeconds, createSession, exerciseElapsedMs, recoverStaleTimer, sessionActiveMs, startProgram, updateSession } from "./workout";
+import { allowedSubstitutions, canFinish, completedExerciseSeconds, createSession, exerciseElapsedMs, recoverOpenWorkout, sessionActiveMs, startProgram, updateSession } from "./workout";
 
 const now = Date.parse("2026-11-22T09:00:00.000Z");
 const data = startProgram(emptyData, "2026-11-20", "Asia/Kolkata", now, "first-run");
@@ -11,6 +11,10 @@ function current(session: Session) {
   const log = session.exercises[session.position];
   if (!log) throw new Error("No current exercise");
   return log;
+}
+
+function completeAndAdvance(session: Session, time: number) {
+  return updateSession(updateSession(session, { type: "done" }, time), { type: "startNext" }, time);
 }
 
 describe("workout session", () => {
@@ -32,23 +36,45 @@ describe("workout session", () => {
     expect(next.position).toBe(1);
     expect(next.exercises[0]).toMatchObject({ state: "completed", elapsedMs: 665_000, startedAtMs: null });
     expect(current(next).exerciseId).toBe("stationary_cycling");
+    expect(current(next).startedAtMs).toBeNull();
+    expect(next.restUntilMs).toBe(late + 90_000);
     expect(updateSession(next, { type: "done", at: 0 }, late + 60_000)).toBe(next);
   });
 
-  it("checkpoints a timer and safely recovers a stale app session", () => {
+  it("reopens a legacy running workout paused at its last checkpoint", () => {
     const start = createSession(run, 1, now);
     const checkpoint = updateSession(start, { type: "checkpoint" }, now + 12_000);
     expect(current(checkpoint)).toMatchObject({ elapsedMs: 12_000, startedAtMs: now + 12_000 });
-    expect(recoverStaleTimer(checkpoint, now + 40_000)).toBe(checkpoint);
-    const reopened = recoverStaleTimer(checkpoint, now + 12 * 60 * 60_000);
+    const legacy = Object.fromEntries(Object.entries(checkpoint).filter(([key]) => key !== "restUntilMs"));
+    const stored = appDataSchema.parse({ ...data, sessions: [legacy] });
+    const [reopened] = recoverOpenWorkout(stored).sessions;
+    if (!reopened) throw new Error("Missing restored workout");
     expect(reopened.position).toBe(0);
+    expect(reopened.restUntilMs).toBeNull();
     expect(current(reopened)).toMatchObject({ elapsedMs: 12_000, startedAtMs: null, state: "in_progress" });
+  });
+
+  it("persists a rest break and starts the next timer only on request", () => {
+    const initial = createSession(run, 1, now);
+    const resting = updateSession(initial, { type: "done" }, now + 60_000);
+    const saved = updateSession(resting, { type: "savePartial" }, now + 70_000);
+    const [loaded] = appDataSchema.parse({ ...data, sessions: [saved] }).sessions;
+    if (!loaded) throw new Error("Missing saved rest break");
+    const resumed = updateSession(loaded, { type: "resume" }, now + 120_000);
+    expect(resumed.restUntilMs).toBe(now + 90_000);
+    expect(current(resumed).startedAtMs).toBeNull();
+    expect(sessionActiveMs(resumed, now + 120_000)).toBe(60_000);
+    expect(updateSession(resumed, { type: "done" }, now + 120_000)).toBe(resumed);
+    const next = updateSession(resumed, { type: "startNext" }, now + 125_000);
+    expect(next.restUntilMs).toBeNull();
+    expect(current(next).startedAtMs).toBe(now + 125_000);
+    expect(sessionActiveMs(next, now + 130_000)).toBe(65_000);
   });
 
   it("keeps position and active time while learning the low row", () => {
     let session = createSession(run, 3, now);
-    session = updateSession(session, { type: "done" }, now + 5_000);
-    session = updateSession(session, { type: "done" }, now + 10_000);
+    session = completeAndAdvance(session, now + 5_000);
+    session = completeAndAdvance(session, now + 10_000);
     expect(current(session).exerciseId).toBe("low_row_machine");
     session = updateSession(session, { type: "openTutorial" }, now + 15_000);
     session = updateSession(session, { type: "watchTutorial" }, now + 20_000);
@@ -62,13 +88,13 @@ describe("workout session", () => {
 
   it("finishes Day 3 with a skipped row only after explicit confirmation", () => {
     let session = createSession(run, 3, now);
-    session = updateSession(session, { type: "done" }, now + 20_000);
-    session = updateSession(session, { type: "done" }, now + 40_000);
+    session = completeAndAdvance(session, now + 20_000);
+    session = completeAndAdvance(session, now + 40_000);
     expect(updateSession(session, { type: "finish" }, now + 41_000)).toBe(session);
     session = updateSession(session, { type: "skip", reason: "Machine occupied" }, now + 60_000);
     session = updateSession(session, { type: "set", index: 1, actualValue: 8, completed: true }, now + 70_000);
     expect(current(session).sets[0]).toMatchObject({ plannedValue: 10, actualValue: 8, unit: "repetitions" });
-    session = updateSession(session, { type: "done" }, now + 80_000);
+    session = completeAndAdvance(session, now + 80_000);
     session = updateSession(session, { type: "done" }, now + 100_000);
     expect(canFinish(session)).toBe(true);
     expect(session.status).toBe("in_progress");

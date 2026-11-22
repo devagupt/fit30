@@ -8,6 +8,7 @@ import { type Fit30Data, type Preferences, type ProgramRun, preferencesSchema } 
 import { startProgram } from '../../domain/workout';
 import { Dialog } from '../../ui/Dialog';
 import type { OfflineStatus } from '../../ui/useConnection';
+import { signalTimerEnd } from '../player/timerAlert';
 import { BackupRestore } from './BackupRestore';
 import './settings.css';
 
@@ -58,6 +59,8 @@ export function SettingsScreen({ data, run, offlineStatus, appInstalled, onInsta
   const [preferenceChanges, setPreferenceChanges] = useState<Partial<Preferences>>({});
   const [startDateChange, setStartDateChange] = useState<string | null>(null);
   const [settingsFeedback, setSettingsFeedback] = useState<Feedback | null>(null);
+  const [alertFeedback, setAlertFeedback] = useState<Feedback | null>(null);
+  const [testingAlert, setTestingAlert] = useState(false);
   const [calendarFeedback, setCalendarFeedback] = useState<Feedback | null>(null);
   const [scheduleFeedback, setScheduleFeedback] = useState<Feedback | null>(null);
   const [exportFeedback, setExportFeedback] = useState<Feedback | null>(null);
@@ -73,6 +76,21 @@ export function SettingsScreen({ data, run, offlineStatus, appInstalled, onInsta
     setPreferenceChanges((changes) => ({ ...changes, [key]: value }));
     setSettingsFeedback(null);
     setCalendarFeedback(null);
+    if (key === 'sound' || key === 'vibration') setAlertFeedback(null);
+  }
+
+  async function testAlert() {
+    setTestingAlert(true);
+    setAlertFeedback(null);
+    try {
+      const result = await signalTimerEnd(fields.sound, fields.vibration);
+      const lines = [];
+      if (fields.sound) lines.push(result.sound ? 'Chime played.' : 'Sound is unavailable in this browser right now.');
+      if (fields.vibration) lines.push(result.vibration ? 'Vibration requested.' : 'Vibration is unavailable on this device.');
+      setAlertFeedback({ text: lines.join(' '), error: !result.sound && !result.vibration });
+    } finally {
+      setTestingAlert(false);
+    }
   }
 
   function readPreferences(): Preferences | null {
@@ -209,6 +227,11 @@ export function SettingsScreen({ data, run, offlineStatus, appInstalled, onInsta
                 <p>Fit30 can signal when your exercise block ends while the workout is open.</p>
                 <label className="settings-check"><input type="checkbox" checked={fields.sound} disabled={busy} onChange={(event) => changePreference('sound', event.target.checked)} /> Play a sound</label>
                 <label className="settings-check"><input type="checkbox" checked={fields.vibration} disabled={busy} onChange={(event) => changePreference('vibration', event.target.checked)} /> Vibrate when supported</label>
+                <button type="button" className="button button-secondary" onClick={() => void testAlert()}
+                  disabled={busy || testingAlert || (!fields.sound && !fields.vibration)}>
+                  Test alert
+                </button>
+                <FeedbackLine feedback={alertFeedback} />
               </div>
               <button type="submit" className="button button-primary" disabled={busy || !preferencesChanged}>Save settings</button>
               <FeedbackLine feedback={settingsFeedback} />

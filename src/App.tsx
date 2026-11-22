@@ -1,16 +1,13 @@
 import { Activity, CalendarDays, ChartNoAxesColumnIncreasing, House, RefreshCw, Settings, WifiOff } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useFit30Data } from './data/useFit30Data';
 import { localDate } from './domain/dates';
 import { newId } from './domain/model';
-import { createSession, recoverStaleTimer, updateSession, type WorkoutAction } from './domain/workout';
-import { CalendarScreen } from './features/calendar/CalendarScreen';
+import { activeWorkout, createSession, updateSession, type WorkoutAction } from './domain/workout';
 import { Onboarding } from './features/onboarding/Onboarding';
 import { TutorialDialog } from './features/player/TutorialDialog';
 import { WorkoutPlayer } from './features/player/WorkoutPlayer';
 import { prepareTimerSound } from './features/player/timerAlert';
-import { ProgressScreen } from './features/progress/ProgressScreen';
-import { SettingsScreen } from './features/settings/SettingsScreen';
 import { TodayScreen } from './features/today/TodayScreen';
 import { useConnection } from './ui/useConnection';
 
@@ -21,26 +18,11 @@ const sections = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ] as const;
 
+const CalendarScreen = lazy(() => import('./features/calendar/CalendarScreen').then(({ CalendarScreen }) => ({ default: CalendarScreen })));
+const ProgressScreen = lazy(() => import('./features/progress/ProgressScreen').then(({ ProgressScreen }) => ({ default: ProgressScreen })));
+const SettingsScreen = lazy(() => import('./features/settings/SettingsScreen').then(({ SettingsScreen }) => ({ default: SettingsScreen })));
+
 type Tab = (typeof sections)[number]['id'];
-
-const playerKey = 'fit30:open-workout';
-
-function lastOpenWorkout(): string | null {
-  try {
-    return window.sessionStorage.getItem(playerKey);
-  } catch {
-    return null;
-  }
-}
-
-function rememberOpenWorkout(id: string | null) {
-  try {
-    if (id) window.sessionStorage.setItem(playerKey, id);
-    else window.sessionStorage.removeItem(playerKey);
-  } catch {
-    // The workout itself is kept in IndexedDB and can be resumed from its day.
-  }
-}
 
 function useToday(timezone: string) {
   const [, setClock] = useState(Date.now);
@@ -75,29 +57,20 @@ export function App() {
   const { online, offlineStatus, appInstalled, install, retryOffline } = useConnection();
   const [tab, setTab] = useState<Tab>('today');
   const [calendarDay, setCalendarDay] = useState<number>();
-  const [playerId, setPlayerId] = useState(lastOpenWorkout);
+  const [playerId, setPlayerId] = useState<string | null>();
   const [tutorialId, setTutorialId] = useState<string | null>(null);
   const [measurementRequested, setMeasurementRequested] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [restored, setRestored] = useState(false);
   const startLock = useRef(false);
-  const recoveryLock = useRef(false);
   const main = useRef<HTMLElement>(null);
   const run = data?.runs.find((entry) => entry.id === data.activeRunId);
-  const playerSession = data?.sessions.find((entry) => entry.id === playerId && entry.programRunId === run?.id && entry.status === 'in_progress');
+  const savedWorkout = data ? activeWorkout(data) : undefined;
+  const playerSession = playerId === undefined || playerId === savedWorkout?.id ? savedWorkout : undefined;
   const today = useToday(run?.timezone ?? data?.preferences.timezone ?? 'Asia/Kolkata');
 
   useEffect(() => {
-    if (!data || restored || recoveryLock.current) return;
-    const now = Date.now();
-    if (!data.sessions.some((session) => recoverStaleTimer(session, now) !== session)) {
-      setRestored(true);
-      return;
-    }
-    recoveryLock.current = true;
-    void commit((current) => ({ ...current, sessions: current.sessions.map((session) => recoverStaleTimer(session, now)) }))
-      .finally(() => setRestored(true));
-  }, [commit, data, restored]);
+    if (data && playerId === undefined) setPlayerId(savedWorkout?.id ?? null);
+  }, [data, playerId, savedWorkout?.id]);
 
   function focusContent() {
     window.requestAnimationFrame(() => {
@@ -115,7 +88,7 @@ export function App() {
 
   async function beginWorkout(dayNumber: number, sessionId?: string) {
     if (!run || !data || startLock.current || isSaving) return;
-    if (data.preferences.sound) prepareTimerSound();
+    if (data.preferences.sound) void prepareTimerSound();
     startLock.current = true;
     setStarting(true);
     let selectedId = sessionId ?? newId();
@@ -136,33 +109,32 @@ export function App() {
         if (!existing) sessions.push(createSession(active, dayNumber, now, selectedId));
         return { ...source, sessions };
       });
-      if (saved) {
-        rememberOpenWorkout(selectedId);
-        setPlayerId(selectedId);
-      }
+      if (saved) setPlayerId(selectedId);
     } finally {
       startLock.current = false;
       setStarting(false);
     }
   }
 
-  function workoutAction(actions: WorkoutAction | WorkoutAction[]) {
+  function workoutAction(actions: WorkoutAction | WorkoutAction[], quiet = false) {
     if (!playerSession) return Promise.resolve(false);
     const now = Date.now();
     const changes = Array.isArray(actions) ? actions : [actions];
     return commit((current) => {
-      const original = current.sessions.find((entry) => entry.id === playerSession.id);
-      if (original?.status !== 'in_progress' || original.programRunId !== current.activeRunId || original.position !== playerSession.position) {
+      const original = activeWorkout(current);
+      if (original?.id !== playerSession.id || original.position !== playerSession.position ||
+        original.restUntilMs !== playerSession.restUntilMs ||
+        original.exercises[original.position]?.exerciseId !== playerSession.exercises[playerSession.position]?.exerciseId) {
+        if (quiet) return current;
         throw new Error('This workout changed in another window. Review the current exercise and try again.');
       }
       const updated = changes.reduce((session, action) => updateSession(session, action, now), original);
       if (updated === original) return current;
       return { ...current, sessions: current.sessions.map((entry) => entry.id === original.id ? updated : entry) };
-    });
+    }, { latest: true, quiet: true });
   }
 
   function leaveWorkout() {
-    rememberOpenWorkout(null);
     setPlayerId(null);
     focusContent();
   }
@@ -190,24 +162,26 @@ export function App() {
             {!data && <button type="button" className="button button-secondary" onClick={() => void reload()}><RefreshCw size={16} aria-hidden="true" /> Try again</button>}
           </div>
         )}
-        {!data || !restored ? (
-          !error && <p role="status" className="app-loading">Opening Fit30…</p>
-        ) : !run ? (
-          <Onboarding data={data} onSave={commit} busy={busy} />
-        ) : playerSession ? (
-          <WorkoutPlayer key={playerSession.id} session={playerSession} preferences={data.preferences} onAction={workoutAction} onExit={leaveWorkout} />
-        ) : tab === 'calendar' ? (
-          <CalendarScreen key={`${run.id}:${calendarDay ?? 'today'}`} data={data} run={run} today={today} initialDay={calendarDay}
-            onStart={(day, id) => void beginWorkout(day, id)} onTutorial={setTutorialId} />
-        ) : tab === 'progress' ? (
-          <ProgressScreen key={`${run.id}:${measurementRequested}`} data={data} run={run} today={today} onSave={commit} busy={busy} initialMeasurement={measurementRequested} />
-        ) : tab === 'settings' ? (
-          <SettingsScreen key={run.id} data={data} run={run} offlineStatus={offlineStatus} appInstalled={appInstalled}
-            onInstall={install} onRetryOffline={retryOffline} onSave={commit} busy={busy} />
-        ) : (
-          <TodayScreen data={data} run={run} today={today} busy={busy} onStart={(day, id) => void beginWorkout(day, id)}
-            onCalendar={(day) => { navigate('calendar'); setCalendarDay(day); }} onMeasurement={() => navigate('progress', true)} onTutorial={setTutorialId} />
-        )}
+        <Suspense fallback={<p role="status" className="app-loading">Opening Fit30…</p>}>
+          {!data ? (
+            !error && <p role="status" className="app-loading">Opening Fit30…</p>
+          ) : !run ? (
+            <Onboarding data={data} onSave={commit} busy={busy} />
+          ) : playerSession ? (
+            <WorkoutPlayer key={playerSession.id} session={playerSession} preferences={data.preferences} onAction={workoutAction} onExit={leaveWorkout} />
+          ) : tab === 'calendar' ? (
+            <CalendarScreen key={`${run.id}:${calendarDay ?? 'today'}`} data={data} run={run} today={today} initialDay={calendarDay}
+              onStart={(day, id) => void beginWorkout(day, id)} onTutorial={setTutorialId} />
+          ) : tab === 'progress' ? (
+            <ProgressScreen key={`${run.id}:${measurementRequested}`} data={data} run={run} today={today} onSave={commit} busy={busy} initialMeasurement={measurementRequested} />
+          ) : tab === 'settings' ? (
+            <SettingsScreen key={run.id} data={data} run={run} offlineStatus={offlineStatus} appInstalled={appInstalled}
+              onInstall={install} onRetryOffline={retryOffline} onSave={commit} busy={busy} />
+          ) : (
+            <TodayScreen data={data} run={run} today={today} busy={busy} onStart={(day, id) => void beginWorkout(day, id)}
+              onCalendar={(day) => { navigate('calendar'); setCalendarDay(day); }} onMeasurement={() => navigate('progress', true)} onTutorial={setTutorialId} />
+          )}
+        </Suspense>
       </main>
       {withNav && <Navigation current={tab} onChange={navigate} mobile />}
       {tutorialId && <TutorialDialog exerciseId={tutorialId} onClose={() => setTutorialId(null)} />}

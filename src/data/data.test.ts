@@ -42,6 +42,7 @@ function draft(data: Fit30Data): Session {
     isMakeUp: false,
     status: 'in_progress',
     position: 0,
+    restUntilMs: null,
     exercises: day.exercise_blocks.map((block) => ({
       sourceExerciseId: block.exercise_id,
       exerciseId: block.exercise_id,

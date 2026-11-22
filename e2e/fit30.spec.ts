@@ -5,6 +5,30 @@ import { preview } from 'vite';
 const testInstant = new Date('2026-11-20T09:30:00Z');
 const videoOrigin = 'https://www.youtube-nocookie.com';
 
+async function stubYouTubePlayer(page: Page, errors: number[] = []) {
+  await page.route('https://www.youtube.com/iframe_api', (route) => route.fulfill({
+    contentType: 'text/javascript',
+    body: `
+      const errors = ${JSON.stringify(errors)};
+      window.YT = { Player: class {
+        constructor(iframe, { events }) {
+          this.iframe = iframe;
+          const error = errors.shift();
+          iframe.addEventListener('load', () => {
+            if (error) events.onError({ data: error });
+            else {
+              events.onReady();
+              events.onStateChange({ data: 1 });
+            }
+          });
+        }
+        destroy() { this.iframe.remove(); }
+      } };
+      window.onYouTubeIframeAPIReady?.();
+    `,
+  }));
+}
+
 async function onBoard(page: Page, startDate: string, reminderTime = '', url = '/', now = testInstant) {
   await page.clock.setFixedTime(now);
   await page.goto(url);
@@ -34,9 +58,14 @@ async function setLocalTime(page: Page, now: Date) {
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
 }
 
+async function completeAndAdvance(page: Page) {
+  await button(page, 'Mark done & next').click();
+  await button(page, 'Start next now').click();
+}
+
 async function finishScheduledWorkout(page: Page) {
   await button(page, 'Start workout').click();
-  for (let exercise = 0; exercise < 4; exercise++) await button(page, 'Mark done & next').click();
+  for (let exercise = 0; exercise < 4; exercise++) await completeAndAdvance(page);
   await button(page, 'Mark done & review').click();
   await button(page, 'Finish workout').click();
   await expect(button(page, 'View workout')).toBeVisible();
@@ -48,6 +77,7 @@ async function download(page: Page, name: string) {
 }
 
 test('carries over a missed Day 3, tracks its timer, and advances after it is logged', async ({ page }, info) => {
+  await stubYouTubePlayer(page);
   await page.route(`${videoOrigin}/embed/**`, (route) => route.fulfill({
     contentType: 'text/html', body: '<!doctype html><title>Tutorial fixture</title><button>Pause clip</button>',
   }));
@@ -73,9 +103,9 @@ test('carries over a missed Day 3, tracks its timer, and advances after it is lo
   await expect(button(page, 'Resume timer')).toBeVisible();
   await expect(page.getByRole('timer')).toHaveText('09:46');
   await button(page, 'Resume timer').click();
-  await button(page, 'Mark done & next').click();
+  await completeAndAdvance(page);
   await expect(page.getByRole('heading', { name: 'Stationary cycling' })).toBeVisible();
-  await button(page, 'Mark done & next').click();
+  await completeAndAdvance(page);
   await expect(page.getByRole('heading', { name: 'Low row machine (lower row)' })).toBeVisible();
 
   await button(page, 'Watch tutorial').click();
@@ -87,7 +117,7 @@ test('carries over a missed Day 3, tracks its timer, and advances after it is lo
   const frame = tutorial.locator('iframe');
   await expect(frame).toHaveCount(0);
   await tutorial.getByRole('button', { name: 'Play video' }).click();
-  await expect(frame).toHaveAttribute('src', `${videoOrigin}/embed/FU6YQawma2Q?autoplay=1&playsinline=1&start=13&end=118`);
+  await expect(frame).toHaveAttribute('src', /\/embed\/FU6YQawma2Q\?.*start=13&end=118&enablejsapi=1/);
   await expect(frame.contentFrame().getByRole('button', { name: 'Pause clip' })).toBeVisible();
   expect(page.context().pages()).toHaveLength(1);
   await page.clock.setFixedTime(new Date(makeUpInstant.getTime() + 134_000));
@@ -101,7 +131,7 @@ test('carries over a missed Day 3, tracks its timer, and advances after it is lo
   await expect(page.getByRole('heading', { name: 'Glute bridge' })).toBeVisible();
   await page.getByText('Log sets', { exact: true }).click();
   await button(page, 'Mark set 1 done').click();
-  await button(page, 'Mark done & next').click();
+  await completeAndAdvance(page);
   await button(page, 'Mark done & review').click();
   await expect(page.getByRole('timer')).toHaveCount(0);
   await button(page, 'Finish workout').click();
@@ -124,8 +154,9 @@ test('carries over a missed Day 3, tracks its timer, and advances after it is lo
   await expect(button(page, 'Continue plan')).toBeVisible();
 });
 
-test('a stalled embedded video shows written cues and can be retried without leaving Fit30', async ({ page }) => {
+test('the tutorial fits narrow and landscape screens and recovers from a stall and a YouTube error', async ({ page }, info) => {
   await page.clock.install({ time: testInstant });
+  await stubYouTubePlayer(page, [0, 101]);
   let unblock: () => void = () => {};
   const stalled = new Promise<void>((resolve) => { unblock = resolve; });
   let requests = 0;
@@ -146,13 +177,29 @@ test('a stalled embedded video shows written cues and can be retried without lea
     await expect(tutorial.getByRole('status')).toHaveText('Loading video…');
     await expect.poll(() => requests).toBe(1);
     await page.clock.fastForward(10_100);
-    await expect(tutorial.getByRole('status')).toHaveText(/video couldn’t load here/);
+    await expect(tutorial.getByRole('status')).toHaveText(/video couldn’t play here/);
     await expect(tutorial.getByRole('heading', { name: 'Form cues' })).toBeVisible();
+    await expect(tutorial.getByRole('region', { name: 'Offline movement guide' })).toBeVisible();
     await expect(tutorial.getByRole('link', { name: 'Open video in YouTube' })).toBeVisible();
     await tutorial.getByRole('button', { name: 'Retry video' }).click();
+    await expect.poll(() => requests).toBe(2);
+    await expect(tutorial.getByRole('button', { name: 'Retry video' })).toBeVisible();
+    await expect(tutorial.locator('iframe')).toHaveCount(0);
+    await tutorial.getByRole('button', { name: 'Retry video' }).click();
     const frame = tutorial.locator('iframe');
-    await expect(frame).toHaveAttribute('src', /\/embed\/m1UF4RgGoY0\?.*&start=164&end=173$/);
+    await expect(frame).toHaveAttribute('src', /\/embed\/m1UF4RgGoY0\?.*&start=164&end=173&enablejsapi=1/);
     await expect(frame.contentFrame().getByRole('button', { name: 'Play clip' })).toBeVisible();
+    for (const [width, height] of [[320, 580], [360, 640], [640, 360]]) {
+      await page.setViewportSize({ width, height });
+      const body = tutorial.locator('.fit-player-dialog__body');
+      expect(await body.evaluate((element) => element.scrollWidth)).toBeLessThanOrEqual(await body.evaluate((element) => element.clientWidth));
+      await body.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+      await expect(tutorial.getByRole('button', { name: 'Close', exact: true })).toBeInViewport();
+      if (width === 360) {
+        await body.evaluate((element) => element.scrollTo(0, 0));
+        await page.screenshot({ path: info.outputPath('tutorial-mobile.png'), scale: 'css' });
+      }
+    }
   } finally {
     unblock();
   }
@@ -183,6 +230,8 @@ test('an optional walk stays a rest day and a make-up partial attempt is resumab
   await page.getByRole('button', { name: /Day 3, Partial/ }).click();
   await expect(page.getByText(/Logged.*Make-up/i)).toBeVisible();
   await button(page, 'Resume workout').click();
+  await expect(page.getByRole('heading', { name: 'Rest', exact: true })).toBeVisible();
+  await button(page, 'Start next now').click();
   await expect(page.getByRole('heading', { name: 'Stationary cycling' })).toBeVisible();
 });
 
@@ -260,17 +309,24 @@ test('resumes an interrupted offline download and saves progress without the Mac
   await button(offlinePage, 'Start workout').click();
   await button(offlinePage, 'Watch tutorial').click();
   const tutorial = offlinePage.getByRole('dialog');
-  await expect(tutorial.getByText('You’re offline. The written cues are available below.')).toBeVisible();
+  await expect(tutorial.getByText('You’re offline. The movement guide and written cues are available below.')).toBeVisible();
+  await expect(tutorial.getByRole('region', { name: 'Offline movement guide' })).toBeVisible();
+  await tutorial.getByRole('button', { name: 'Play guide', exact: true }).click();
+  await expect(tutorial.getByRole('button', { name: 'Pause guide', exact: true })).toBeVisible();
   await expect(tutorial.getByRole('heading', { name: 'Lower-back cue' })).toBeVisible();
   await expect(tutorial.locator('iframe')).toHaveCount(0);
   await tutorial.getByRole('button', { name: 'Close', exact: true }).click();
-  await button(offlinePage, 'Mark done & next').click();
+  await completeAndAdvance(offlinePage);
   await expect(offlinePage.getByRole('heading', { name: 'Stationary cycling' })).toBeVisible();
-  await offlinePage.reload();
-  await expect(offlinePage.getByRole('heading', { name: 'Stationary cycling' })).toBeVisible();
-  await button(offlinePage, 'Exit workout').click();
-  await button(offlinePage, 'Save partial').click();
-  await expect(offlinePage.getByText('1 of 5 done')).toBeVisible();
+  await offlinePage.close();
+  const reopened = await context.newPage();
+  await reopened.clock.setFixedTime(testInstant);
+  await reopened.goto(url);
+  await expect(reopened.getByRole('heading', { name: 'Stationary cycling' })).toBeVisible();
+  await expect(button(reopened, 'Resume timer')).toBeVisible();
+  await button(reopened, 'Exit workout').click();
+  await button(reopened, 'Save partial').click();
+  await expect(reopened.getByText('1 of 5 done')).toBeVisible();
   expect([...origins]).toEqual([new URL(url).origin]);
 });
 
@@ -328,6 +384,137 @@ test('a finished timer stays on the exercise and discarding takes confirmation',
   await expect(page.getByText('0 of 5 done')).toBeVisible();
 });
 
+test('pause and done are saved while a background timer checkpoint is finishing', async ({ page }) => {
+  await page.clock.install({ time: testInstant });
+  await page.addInitScript(() => {
+    const descriptor = Object.getOwnPropertyDescriptor(IDBTransaction.prototype, 'oncomplete');
+    if (!descriptor?.set) return;
+    const setOnComplete = descriptor.set;
+    Object.defineProperty(IDBTransaction.prototype, 'oncomplete', {
+      ...descriptor,
+      set(this: IDBTransaction, callback: (event: Event) => void) {
+        setOnComplete.call(this, (event: Event) => {
+          const flags = document.documentElement.dataset;
+          if (this.mode === 'readwrite' && flags.checkpoint === 'hold') {
+            flags.checkpoint = 'held';
+            document.addEventListener('release-checkpoint', () => callback.call(this, event), { once: true });
+          } else callback.call(this, event);
+        });
+      },
+    });
+  });
+  const flags = page.locator('html');
+  const holdCheckpoint = async (time: number) => {
+    await page.evaluate(() => { document.documentElement.dataset.checkpoint = 'hold'; });
+    await page.clock.setFixedTime(new Date(testInstant.getTime() + time));
+    await page.clock.fastForward(15_100);
+    await expect(flags).toHaveAttribute('data-checkpoint', 'held');
+    await expect(button(page, 'Pause timer')).toBeEnabled();
+    await expect(button(page, 'Mark done & next')).toBeEnabled();
+  };
+  const releaseCheckpoint = () => page.evaluate(() => document.dispatchEvent(new Event('release-checkpoint')));
+
+  await onBoard(page, '2026-11-20');
+  await button(page, 'Start workout').click();
+  await expect(button(page, 'Pause timer')).toBeVisible();
+  await holdCheckpoint(15_000);
+  await button(page, 'Pause timer').click();
+  await expect(button(page, 'Resume timer')).toBeVisible();
+  await releaseCheckpoint();
+
+  await button(page, 'Resume timer').click();
+  await expect(button(page, 'Pause timer')).toBeVisible();
+  await holdCheckpoint(30_000);
+  await button(page, 'Mark done & next').click();
+  await expect(page.getByRole('heading', { name: 'Rest', exact: true })).toBeVisible();
+  await releaseCheckpoint();
+  await button(page, 'Start next now').click();
+  await expect(page.getByRole('heading', { name: 'Stationary cycling', exact: true })).toBeVisible();
+});
+
+test('foreground timers keep the screen awake and signal exercise and rest ends once', async ({ page }, info) => {
+  await page.addInitScript(() => {
+    const increment = (key: string) => {
+      const data = document.documentElement.dataset;
+      data[key] = String(Number(data[key] ?? 0) + 1);
+    };
+    Object.defineProperty(navigator, 'wakeLock', { value: {
+      async request() {
+        increment('wakeLocks');
+        return {
+          released: false,
+          async release() {
+            this.released = true;
+            increment('wakeReleases');
+          },
+        };
+      },
+    } });
+    Object.defineProperty(navigator, 'vibrate', { value: () => {
+      increment('vibrations');
+      return true;
+    } });
+    Object.defineProperty(window, 'AudioContext', { value: class {
+      state = 'running';
+      currentTime = 0;
+      destination = {};
+      createOscillator() {
+        return {
+          frequency: {},
+          connect: (next: unknown) => next,
+          disconnect() {},
+          start() { increment('tones'); },
+          stop() {},
+        };
+      }
+      createGain() {
+        return {
+          gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
+          connect() {},
+          disconnect() {},
+        };
+      }
+    } });
+  });
+  const html = page.locator('html');
+  await onBoard(page, '2026-11-20');
+  await tab(page, 'Settings');
+  await page.getByLabel('Play a sound').check();
+  await page.getByLabel('Vibrate when supported').check();
+  await button(page, 'Test alert').click();
+  await expect(page.getByText('Chime played. Vibration requested.')).toBeVisible();
+  await expect(html).toHaveAttribute('data-tones', '2');
+  await expect(html).toHaveAttribute('data-vibrations', '1');
+  await button(page, 'Save settings').click();
+  await expect(page.getByText('Settings saved.')).toBeVisible();
+
+  await tab(page, 'Today');
+  await button(page, 'Start workout').click();
+  await expect(html).toHaveAttribute('data-wake-locks', '1');
+  await button(page, 'Pause timer').click();
+  await expect(html).toHaveAttribute('data-wake-releases', '1');
+  await button(page, 'Resume timer').click();
+  await expect(html).toHaveAttribute('data-wake-locks', '2');
+  await page.clock.setFixedTime(new Date(testInstant.getTime() + 605_000));
+  await expect(page.getByRole('timer')).toHaveText('+00:05');
+  await expect(html).toHaveAttribute('data-vibrations', '2');
+  await expect(html).toHaveAttribute('data-tones', '4');
+  await button(page, 'Mark done & next').click();
+  await expect(page.getByRole('timer', { name: 'Rest remaining' })).toHaveText('00:30');
+  await expect(html).toHaveAttribute('data-wake-locks', '3');
+  await page.screenshot({ path: info.outputPath('rest-mobile.png'), scale: 'css' });
+
+  await page.clock.setFixedTime(new Date(testInstant.getTime() + 636_000));
+  await expect(page.getByText('Rest complete', { exact: true })).toBeVisible();
+  await expect(html).toHaveAttribute('data-vibrations', '3');
+  await expect(html).toHaveAttribute('data-tones', '6');
+  await expect(html).toHaveAttribute('data-wake-releases', '3');
+  await expect(page.getByRole('heading', { name: 'Stationary cycling', exact: true })).toHaveCount(0);
+  await button(page, 'Start next now').click();
+  await expect(page.getByRole('timer')).toHaveText('08:00');
+  await expect(html).toHaveAttribute('data-vibrations', '3');
+});
+
 test('Progress shows time by category and exercise stats from saved workout details', async ({ page }, info) => {
   await onBoard(page, '2026-11-20');
   await button(page, 'Start workout').click();
@@ -338,10 +525,10 @@ test('Progress shows time by category and exercise stats from saved workout deta
   await button(page, 'Save cardio details').click();
   await expect(page.getByText('Saved', { exact: true })).toBeVisible();
   await setLocalTime(page, new Date(testInstant.getTime() + 6 * 60_000));
-  await button(page, 'Mark done & next').click();
+  await completeAndAdvance(page);
   await expect(page.getByRole('heading', { name: 'Stationary cycling', exact: true })).toBeVisible();
   await setLocalTime(page, new Date(testInstant.getTime() + 14 * 60_000));
-  await button(page, 'Mark done & next').click();
+  await completeAndAdvance(page);
   await expect(page.getByRole('heading', { name: 'Chest press machine', exact: true })).toBeVisible();
 
   await page.getByText('Log sets', { exact: true }).click();
@@ -351,7 +538,7 @@ test('Progress shows time by category and exercise stats from saved workout deta
   await button(page, 'Mark set 1 done').click();
   await expect(button(page, 'Update set 1')).toBeVisible();
   await setLocalTime(page, new Date(testInstant.getTime() + 17 * 60_000));
-  await button(page, 'Mark done & next').click();
+  await completeAndAdvance(page);
   await expect(page.getByRole('heading', { name: 'Forearm plank (or knee plank)' })).toBeVisible();
 
   await page.getByText('Log sets', { exact: true }).click();
@@ -359,7 +546,7 @@ test('Progress shows time by category and exercise stats from saved workout deta
   await button(page, 'Mark set 1 done').click();
   await expect(button(page, 'Update set 1')).toBeVisible();
   await setLocalTime(page, new Date(testInstant.getTime() + 20 * 60_000));
-  await button(page, 'Mark done & next').click();
+  await completeAndAdvance(page);
   await expect(page.getByRole('heading', { name: 'Gentle cooldown and stretches' })).toBeVisible();
   await setLocalTime(page, new Date(testInstant.getTime() + 21 * 60_000));
   await button(page, 'Mark done & review').click();
@@ -422,6 +609,7 @@ test('mobile tabs fit 360px and a saved workout resumes across a local date boun
   }
   await tab(page, 'Today');
   await button(page, 'Resume workout').click();
+  await button(page, 'Start next now').click();
   await expect(page.getByRole('heading', { name: 'Stationary cycling' })).toBeVisible();
 });
 

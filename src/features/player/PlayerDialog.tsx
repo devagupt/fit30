@@ -48,7 +48,7 @@ export function PlayerDialog({ title, eyebrow, children, onClose, closeDisabled 
           <X size={21} aria-hidden="true" />
         </button>
       </div>
-      {children}
+      <div className="fit-player-dialog__body">{children}</div>
     </dialog>
   );
 }

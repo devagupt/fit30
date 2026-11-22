@@ -8,13 +8,13 @@ import { PlayerDialog } from './PlayerDialog';
 import { prepareTimerSound } from './timerAlert';
 import { TutorialDialog } from './TutorialDialog';
 import { ExerciseDetails, getSessionDetailsAction, SessionDetails } from './WorkoutLogs';
-import { WorkoutTimer } from './WorkoutTimer';
+import { RestTimer, WorkoutTimer } from './WorkoutTimer';
 import './player.css';
 
 interface WorkoutPlayerProps {
   session: Session;
   preferences: Preferences;
-  onAction: (action: WorkoutAction | WorkoutAction[]) => Promise<boolean>;
+  onAction: (action: WorkoutAction | WorkoutAction[], quiet?: boolean) => Promise<boolean>;
   onExit: () => void;
 }
 
@@ -36,9 +36,11 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
   const isWalk = day?.day_type === 'rest';
   const substitutionIds = log ? allowedSubstitutions(log) : [];
   const currentExerciseId = log?.exerciseId;
+  const resting = session.restUntilMs !== null;
   const heading = useRef<HTMLHeadingElement>(null);
   const dialogTrigger = useRef<HTMLButtonElement | null>(null);
   const busy = useRef(false);
+  const backgroundSave = useRef(false);
   const [saving, setSaving] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const [overlay, setOverlay] = useState<Overlay | null>(null);
@@ -47,25 +49,31 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
     : null;
 
   const apply = useCallback(async (action: WorkoutAction | WorkoutAction[], quiet = false) => {
-    if (busy.current) return false;
+    if (busy.current || (quiet && backgroundSave.current)) return false;
 
-    busy.current = true;
-    setSaving(true);
-    if (!quiet) setSaveFailed(false);
+    if (quiet) backgroundSave.current = true;
+    else {
+      busy.current = true;
+      setSaving(true);
+      setSaveFailed(false);
+    }
     const guarded = Array.isArray(action)
       ? action.map((item) => ({ ...item, at: position }))
       : { ...action, at: position };
 
     try {
-      const persisted = await onAction(guarded);
+      const persisted = await onAction(guarded, quiet);
       if (!persisted && !quiet) setSaveFailed(true);
       return persisted;
     } catch {
       if (!quiet) setSaveFailed(true);
       return false;
     } finally {
-      busy.current = false;
-      setSaving(false);
+      if (quiet) backgroundSave.current = false;
+      else {
+        busy.current = false;
+        setSaving(false);
+      }
     }
   }, [onAction, position]);
 
@@ -82,17 +90,20 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
     const checkpointOnHide = () => {
       if (document.visibilityState === 'hidden') checkpoint();
     };
+    const checkpointOnPageHide = () => checkpoint();
     document.addEventListener('visibilitychange', checkpointOnHide);
+    window.addEventListener('pagehide', checkpointOnPageHide);
     return () => {
       window.clearInterval(interval);
       document.removeEventListener('visibilitychange', checkpointOnHide);
+      window.removeEventListener('pagehide', checkpointOnPageHide);
     };
   }, [running, position, currentExerciseId]);
 
   useLayoutEffect(() => {
     heading.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
-  }, [position, currentExerciseId]);
+  }, [position, currentExerciseId, resting]);
 
   function displayOverlay(type: Overlay['type']) {
     setOverlay({ type, position, exerciseId: currentExerciseId });
@@ -122,8 +133,13 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
   }
 
   function toggleTimer() {
-    if (!running && preferences.sound) prepareTimerSound();
+    if (!running && preferences.sound) void prepareTimerSound();
     void apply({ type: running ? 'pause' : 'resume' });
+  }
+
+  function startNext() {
+    if (preferences.sound) void prepareTimerSound();
+    void apply({ type: 'startNext' });
   }
 
   async function saveAndExit(form: HTMLFormElement | null, type: 'savePartial' | 'finish' | 'abandon') {
@@ -145,6 +161,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
   const saveError = saveFailed && (
     <p className="fit-player-error" role="alert">Your change couldn’t be saved. Please try again.</p>
   );
+  const saveFeedback = saving ? <p className="fit-player-inline-note" role="status">Saving workout…</p> : saveError;
   const completedCount = exercises.filter((item) => item.state === 'completed').length;
   const skippedCount = exercises.filter((item) => item.state === 'skipped').length;
   const readyToFinish = canFinish(session);
@@ -175,10 +192,26 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
           <span key={item.order} data-state={index === position ? 'current' : item.state} />
         ))}
       </div>
-      {!visibleOverlay && saveError}
-
-      {log && exercise && displayBlock ? (
-        <>
+      {session.restUntilMs !== null && exercise && displayBlock ? (
+        <div key={`rest:${position}`}>
+          <header className="fit-player-exercise-heading">
+            <h1 ref={heading} tabIndex={-1}>Rest</h1>
+            <p className="eyebrow">Up next</p>
+            <p className="fit-player-prescription">{exercise.name}</p>
+            <p className="fit-player-equipment">{formatPrescription(displayBlock)}</p>
+          </header>
+          <RestTimer deadline={session.restUntilMs} sound={preferences.sound} vibration={preferences.vibration} />
+          <div className="fit-player-controls">
+            {!visibleOverlay && saveFeedback}
+            <div className="fit-player-controls__main">
+              <button type="button" className="button button-primary" disabled={saving} onClick={startNext}>
+                <Play size={20} aria-hidden="true" /> Start next now
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : log && exercise && displayBlock ? (
+        <div key={`exercise:${position}:${log.exerciseId}`}>
           <header className="fit-player-exercise-heading">
             <p className="eyebrow">Exercise {position + 1} of {exercises.length} · {categoryLabel(exercise.category)}</p>
             <h1 ref={heading} tabIndex={-1}>{exercise.name}</h1>
@@ -217,7 +250,6 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
 
           {!review && (
             <ExerciseDetails
-              key={log.exerciseId + position}
               log={log}
               strength={exercise.category === 'strength'}
               cardio={exercise.category === 'cardio' || isWalk}
@@ -227,6 +259,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
           )}
 
           <div className="fit-player-controls">
+            {!visibleOverlay && saveFeedback}
             <div className="fit-player-controls__main">
               {!review && (
                 <button type="button" className="button button-secondary" disabled={saving} onClick={toggleTimer}>
@@ -257,7 +290,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
               )}
             </div>
           </div>
-        </>
+        </div>
       ) : (
         <div className="fit-player-summary">
           <header className="fit-player-exercise-heading">
@@ -291,6 +324,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
               </p>
             )}
             <div className="fit-player-controls">
+              {!visibleOverlay && saveFeedback}
               <div className="fit-player-controls__main">
                 <button type="submit" className="button button-primary" disabled={saving}>
                   {readyToFinish ? isWalk ? 'Save walk' : 'Finish workout' : 'Save partial'}
@@ -326,7 +360,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
               Skip reason (optional)
               <input name="reason" type="text" maxLength={500} placeholder="Machine occupied" />
             </label>
-            {saveError}
+            {saveFeedback}
             <div className="fit-player-dialog__actions">
               <button type="submit" className="button button-primary" disabled={saving}>
                 {last ? 'Skip & review' : 'Skip & next'}
@@ -354,7 +388,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
             void saveAndExit(event.currentTarget, 'savePartial');
           }}>
             <SessionDetails session={session} />
-            {saveError}
+            {saveFeedback}
             <div className="fit-player-dialog__actions">
               <button type="submit" className="button button-primary" disabled={saving}>Save partial</button>
               <button type="button" className="button button-secondary" disabled={saving} onClick={closeOverlay}>Keep going</button>
@@ -367,7 +401,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
       {visibleOverlay === 'discard' && (
         <PlayerDialog title="Discard this attempt?" onClose={() => displayOverlay('exit')} closeDisabled={saving}>
           <p className="fit-player-dialog__meta">The exercise logs and notes from this attempt will be permanently removed.</p>
-          {saveError}
+          {saveFeedback}
           <div className="fit-player-dialog__actions">
             <button type="button" className="button fit-player-danger" disabled={saving} onClick={() => void saveAndExit(null, 'abandon')}>Discard attempt</button>
             <button type="button" className="button button-secondary" disabled={saving} onClick={() => displayOverlay('exit')}>Go back</button>

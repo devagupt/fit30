@@ -3,8 +3,10 @@ import { newId, prescriptionFor, substitutionIds, type ExerciseLog, type Fit30Da
 import { getDay, getExercise, type ExerciseBlock } from "./program";
 
 type PlayerControl = {
-  type: "pause" | "resume" | "checkpoint" | "done" | "next" | "previous" | "openTutorial" | "watchTutorial" | "savePartial" | "finish" | "abandon";
+  type: "pause" | "resume" | "checkpoint" | "done" | "startNext" | "next" | "previous" | "openTutorial" | "watchTutorial" | "savePartial" | "finish" | "abandon";
 };
+
+export const exerciseRestMs = 30_000;
 
 type SetChange = { type: "set"; index: number; actualValue?: number | null; weightKg?: number | null; completed?: boolean };
 type CardioChange = { type: "cardio"; actualMinutes?: number | null; distanceKm?: number | null; speedKmh?: number | null };
@@ -76,6 +78,7 @@ function onCurrent(session: Session, edit: (log: ExerciseLog) => ExerciseLog): S
 }
 
 function startCurrent(session: Session, now: number): Session {
+  if (session.restUntilMs !== null) return session;
   return onCurrent(session, (log) => editable(log) && log.startedAtMs === null
     ? { ...log, state: "in_progress", startedAtMs: now }
     : log);
@@ -102,6 +105,7 @@ export function createSession(run: ProgramRun, dayNumber: number, now = Date.now
     isMakeUp: scheduledLocalDate < localDate(run.timezone, now),
     status: "in_progress",
     position: 0,
+    restUntilMs: null,
     exercises: day.exercise_blocks.map((block) => initialLog(block)),
     effort: null,
     backPain: null,
@@ -161,7 +165,7 @@ function updateDetails(session: Session, action: DetailsChange): Session {
 
 function visit(session: Session, position: number, now: number, start: boolean): Session {
   if (position === session.position || position < 0 || position > session.exercises.length) return session;
-  const moved = { ...pauseCurrent(session, now), position };
+  const moved = { ...pauseCurrent(session, now), position, restUntilMs: null };
   return start ? startCurrent(moved, now) : moved;
 }
 
@@ -176,6 +180,7 @@ function discardAttempt(session: Session, timestamp: string): Session {
     finishedAt: timestamp,
     exercises: planDay(session.plannedDayNumber).exercise_blocks.map((block) => initialLog(block)),
     position: 0,
+    restUntilMs: null,
     effort: null,
     backPain: null,
     notes: "",
@@ -188,6 +193,9 @@ function applyAction(session: Session, action: WorkoutAction, now: number, times
   if (session.status === "partial") {
     return action.type === "resume" ? startCurrent({ ...session, status: "in_progress", finishedAt: null }, now) : session;
   }
+  if (session.restUntilMs !== null && ["done", "skip", "substitute", "set", "cardio", "next"].includes(action.type)) {
+    return session;
+  }
 
   const current = session.exercises[session.position];
   switch (action.type) {
@@ -195,9 +203,11 @@ function applyAction(session: Session, action: WorkoutAction, now: number, times
     case "openTutorial":
       return pauseCurrent(session, now);
     case "watchTutorial":
-      return onCurrent(pauseCurrent(session, now), (log) => ({ ...log, tutorialWatchedAt: timestamp }));
+      return onCurrent(session, (log) => ({ ...log, tutorialWatchedAt: timestamp }));
     case "resume":
       return startCurrent(session, now);
+    case "startNext":
+      return session.restUntilMs === null ? session : startCurrent({ ...session, restUntilMs: null }, now);
     case "checkpoint":
       return onCurrent(session, (log) => log.startedAtMs !== null && now > log.startedAtMs
         ? { ...log, elapsedMs: exerciseElapsedMs(log, now), startedAtMs: now }
@@ -216,7 +226,10 @@ function applyAction(session: Session, action: WorkoutAction, now: number, times
         completedAt: done ? timestamp : null,
         skipReason: action.type === "skip" ? action.reason?.trim().slice(0, 500) || null : null,
       }));
-      return visit(marked, session.position + 1, now, true);
+      const next = visit(marked, session.position + 1, now, false);
+      return done && editable(next.exercises[next.position])
+        ? { ...next, restUntilMs: now + exerciseRestMs }
+        : startCurrent(next, now);
     }
     case "substitute": {
       const block = planDay(session.plannedDayNumber).exercise_blocks[session.position];
@@ -245,11 +258,25 @@ export function updateSession(session: Session, action: WorkoutAction, now = Dat
   return changed === session ? session : { ...changed, updatedAt };
 }
 
-export function recoverStaleTimer(session: Session, now = Date.now()): Session {
-  const log = session.exercises[session.position];
-  const lastSavedAt = Date.parse(session.updatedAt);
-  if (log?.startedAtMs == null || now - lastSavedAt <= 60_000) return session;
-  return updateSession(session, { type: "pause" }, lastSavedAt);
+export function activeWorkout(data: Fit30Data): Session | undefined {
+  return data.sessions.reduce<Session | undefined>((selected, session) => {
+    if (session.programRunId !== data.activeRunId || session.status !== "in_progress") return selected;
+    return !selected || session.updatedAt >= selected.updatedAt ? session : selected;
+  }, undefined);
+}
+
+export function recoverOpenWorkout(data: Fit30Data): Fit30Data {
+  const selected = activeWorkout(data);
+  if (!selected) return data;
+  let changed = false;
+  const sessions = data.sessions.map((session) => {
+    if (session.status !== "in_progress") return session;
+    const action = session.id === selected.id ? "pause" : "savePartial";
+    const restored = updateSession(session, { type: action }, Date.parse(session.updatedAt));
+    changed ||= restored !== session;
+    return restored;
+  });
+  return changed ? { ...data, sessions } : data;
 }
 
 export function startProgram(data: Fit30Data, startDate: string, timezone: string, now = Date.now(), id = newId()): Fit30Data {

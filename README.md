@@ -72,11 +72,15 @@ Browser storage belongs to a specific browser and address, including the protoco
 
 ## Workout walkthrough
 
-Today offers **Resume workout** for a saved session and **Continue plan** for the earliest unfinished workout that has come due. After completing a session, Today shows that workout for the rest of the local day. Calendar records the original dates and the actual workout history. Scheduled rest days still offer recovery and an optional walk.
+Today offers **Resume workout** for a saved session and **Continue plan** for the earliest unfinished workout that has come due. Reopening the app mid-workout takes you back to the current exercise with its timer paused at the latest saved checkpoint. After completing a session, Today shows that workout for the rest of the local day. Calendar records the original dates and the actual workout history. Scheduled rest days still offer recovery and an optional walk.
 
 To try Day 3 immediately in a fresh browser profile, set Day 1 to two days ago and choose **Start today’s workout** on Today. Mark the first two exercises done, open the low-row tutorial, then skip the row with a reason. Finish the remaining exercises and tap **Finish workout**. Refresh and check the skipped row in **Today** and **Calendar**, then check **Progress**. Set Day 1 to six days ago in a fresh profile to test the Day 7 rest screen.
 
-The 30-minute target is the sum of the original exercise budgets. You can pause or go into overtime. Opening a tutorial pauses the timer until you resume it. A timer left running when the app is closed for an extended period resumes paused at its last saved checkpoint. Tap **Play video** in a tutorial to watch it in Fit30. Videos stream from YouTube and need internet access. Written cues are available offline, and the YouTube link is a fallback if a clip cannot play in the app. Fit30 provides calendar exports for closed-app reminders and visual timer cues during workouts. Device-verified push and advanced charts and history editing are later phases.
+The 30-minute target is the sum of the original exercise budgets. A 30-second rest countdown follows completed exercises when another exercise is next. Use **Start next now** whenever you’re ready. Rest and tutorial time are separate from the active exercise budget.
+
+Open a tutorial to pause the workout timer and see its original movement guide and written cues offline. Tap **Play video** to stream the YouTube tutorial in Fit30. If the embedded player stalls or reports a playback error, use the local guide or open the video in YouTube when you have internet.
+
+In **Settings → In-workout timer**, enable sound or vibration and use **Test alert** to check them on your phone. When the workout is visible, Fit30 requests that the screen stay awake during active exercise and rest timers where the device supports it. A visual cue appears at the end of a countdown. Fit30 also provides calendar exports for closed-app reminders.
 
 ## Track progress by exercise
 

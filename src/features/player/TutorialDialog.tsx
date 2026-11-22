@@ -3,6 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { categoryLabel, getExercise, tutorialEmbedUrl, tutorialWatchUrl } from '../../domain/program';
 import { formatClock } from './formatClock';
 import { InlineTutorial } from './InlineTutorial';
+import { MovementGuide } from './MovementGuide';
 import { PlayerDialog } from './PlayerDialog';
 import './player.css';
 
@@ -43,12 +44,9 @@ export function TutorialDialog({ exerciseId, onClose, onOpenVideo, timerPaused }
       </p>
       {timerPaused && <p className="fit-player-inline-note">Workout timer paused</p>}
 
-      {watchUrl && (
+      {watchUrl && online && (
         <div className="fit-player-video">
-          {embedUrl && online && <InlineTutorial key={exerciseId} url={embedUrl} name={exercise.name} onOpenVideo={onOpenVideo} />}
-          {!online && (
-            <p className="fit-player-inline-note" role="status">You’re offline. The written cues are available below.</p>
-          )}
+          {embedUrl && <InlineTutorial key={exerciseId} url={embedUrl} name={exercise.name} onOpenVideo={onOpenVideo} />}
           <div className="fit-player-video__info">
             <span className="fit-player-video__icon"><CirclePlay size={24} aria-hidden="true" /></span>
             <div>
@@ -68,7 +66,10 @@ export function TutorialDialog({ exerciseId, onClose, onOpenVideo, timerPaused }
           </a>
         </div>
       )}
-      {!watchUrl && <p className="fit-player-inline-note">Video unavailable. Use the written cues below.</p>}
+      {!online && <p className="fit-player-inline-note" role="status">You’re offline. The movement guide and written cues are available below.</p>}
+      {online && !watchUrl && <p className="fit-player-inline-note">Video unavailable. Use the movement guide and written cues below.</p>}
+
+      <MovementGuide key={exerciseId} exerciseId={exerciseId} />
 
       {video?.exercise_match_note && (
         <div className="fit-player-notice">

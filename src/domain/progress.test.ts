@@ -23,7 +23,9 @@ function finish(day: number, performedDate: string, id: string, skipAt?: number)
   const startedAt = Date.parse(`${performedDate}T10:00:00Z`);
   let session = createSession(run, day, startedAt, id);
   for (let index = 0; index < session.exercises.length; index++) {
-    session = updateSession(session, { type: skipAt === index ? "skip" : "done" }, startedAt + (index + 1) * 30_000);
+    const time = startedAt + (index + 1) * 30_000;
+    session = updateSession(session, { type: skipAt === index ? "skip" : "done" }, time);
+    session = updateSession(session, { type: "startNext" }, time);
   }
   return updateSession(session, { type: "finish" }, startedAt + session.exercises.length * 30_000);
 }

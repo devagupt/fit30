@@ -63,6 +63,7 @@ const sessionSchema = z.object({
   isMakeUp: z.boolean(),
   status: z.enum(["in_progress", "partial", "completed", "abandoned"]),
   position,
+  restUntilMs: milliseconds.nullable().default(null),
   exercises: z.array(exerciseLogSchema).min(1).max(5),
   effort: z.number().int().min(1).max(10).nullable(),
   backPain: z.number().int().min(0).max(10).nullable(),
@@ -156,6 +157,15 @@ export const appDataSchema = dataRecord.superRefine((data, context) => {
     }
     if (session.exercises.length !== day.exercise_blocks.length || session.position > session.exercises.length) {
       issue("Workout attempt must contain the full set of planned blocks and a valid current position", [...path, "exercises"]);
+    }
+    if (session.restUntilMs !== null) {
+      const previous = session.exercises[session.position - 1];
+      const next = session.exercises[session.position];
+      if ((session.status !== "in_progress" && session.status !== "partial") ||
+        previous?.state !== "completed" || !next || (next.state !== "pending" && next.state !== "in_progress") ||
+        next.startedAtMs !== null || session.restUntilMs < Date.parse(session.performedAt)) {
+        issue("A rest break must lead from a completed exercise to an open exercise with its timer stopped", [...path, "restUntilMs"]);
+      }
     }
     session.exercises.forEach((log, logIndex) => {
       const logPath = [...path, "exercises", logIndex];

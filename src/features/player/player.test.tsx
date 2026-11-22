@@ -5,6 +5,7 @@ import * as program from '../../domain/program';
 import { createSession, updateSession } from '../../domain/workout';
 import { TutorialDialog } from './TutorialDialog';
 import { WorkoutTimer } from './WorkoutTimer';
+import { movementGuides } from './movementGuides';
 
 const now = Date.UTC(2026, 10, 22, 8);
 const run: ProgramRun = {
@@ -51,6 +52,10 @@ describe('workout timer display', () => {
 });
 
 describe('exercise tutorial content', () => {
+  it('bundles a movement guide for every canonical exercise', () => {
+    expect(Object.keys(movementGuides).sort()).toEqual(Object.keys(program.program.exercise_library).sort());
+  });
+
   it('uses the supported low-row source and warns to check the equipment', () => {
     const screen = renderToStaticMarkup(
       <TutorialDialog exerciseId="low_row_machine" onClose={() => {}} timerPaused />,
