@@ -10,6 +10,7 @@ import { Onboarding } from './features/onboarding/Onboarding';
 import { TutorialDialog } from './features/player/TutorialDialog';
 import { WorkoutPlayer } from './features/player/WorkoutPlayer';
 import { prepareTimerSound } from './features/player/timerAlert';
+import { useDeviceReminders } from './features/reminders/useDeviceReminders';
 import { TodayScreen } from './features/today/TodayScreen';
 import { useConnection } from './ui/useConnection';
 
@@ -56,6 +57,7 @@ function Navigation({ current, onChange, mobile = false }: { current: Tab; onCha
 
 export function App() {
   const { data, error, isSaving, commit, reload } = useFit30Data();
+  const deviceReminders = useDeviceReminders(data);
   const { online, offlineStatus, appInstalled, install, retryOffline } = useConnection();
   const [tab, setTab] = useState<Tab>('today');
   const [calendarDay, setCalendarDay] = useState<number>();
@@ -173,7 +175,7 @@ export function App() {
           ) : !run ? (
             <Onboarding data={data} onSave={commit} busy={busy} />
           ) : playerSession ? (
-            <WorkoutPlayer key={playerSession.id} session={playerSession} preferences={data.preferences} onAction={workoutAction} onExit={leaveWorkout} />
+            <WorkoutPlayer key={playerSession.id} session={playerSession} preferences={data.preferences} online={online} onAction={workoutAction} onExit={leaveWorkout} />
           ) : tab === 'calendar' ? (
             <CalendarScreen key={`${run.id}:${calendarDay ?? 'today'}`} data={data} run={run} today={today} initialDay={calendarDay}
               onStart={(day, id) => void beginWorkout(day, id)} onTutorial={setTutorialId} />
@@ -181,7 +183,7 @@ export function App() {
             <ProgressScreen key={`${run.id}:${measurementRequested}`} data={data} run={run} today={today} onSave={commit} busy={busy} initialMeasurement={measurementRequested} />
           ) : tab === 'settings' ? (
             <SettingsScreen key={run.id} data={data} run={run} online={online} offlineStatus={offlineStatus} appInstalled={appInstalled}
-              onInstall={install} onRetryOffline={retryOffline} onSave={commit} busy={busy} />
+              deviceReminders={deviceReminders} onInstall={install} onRetryOffline={retryOffline} onSave={commit} busy={busy} />
           ) : (
             <TodayScreen data={data} run={run} today={today} busy={busy} onStart={(day, id) => void beginWorkout(day, id)}
               onCalendar={(day) => { navigate('calendar'); setCalendarDay(day); }} onMeasurement={() => navigate('progress', true)} onTutorial={setTutorialId} />
@@ -189,7 +191,7 @@ export function App() {
         </Suspense>
       </main>
       {withNav && <Navigation current={tab} onChange={navigate} mobile />}
-      {tutorialId && <TutorialDialog exerciseId={tutorialId} onClose={() => setTutorialId(null)} />}
+      {tutorialId && <TutorialDialog exerciseId={tutorialId} online={online} onClose={() => setTutorialId(null)} />}
     </div>
   );
 }

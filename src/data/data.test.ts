@@ -4,7 +4,7 @@ import { appDataSchema, emptyData, type Fit30Data, type Session } from '../domai
 import { getDay } from '../domain/program';
 import { scheduledDate } from '../domain/dates';
 import { mergeBackup, parseBackup, serializeBackup } from './backup';
-import { createCalendarExport, measurementsCsv, workoutsCsv } from './exports';
+import { measurementsCsv, workoutsCsv } from './exports';
 import { DataConflictError, readData, updateData } from './storage';
 
 const runId = '1fe2947b-5209-4adf-9e67-b5228040fcec';
@@ -12,7 +12,6 @@ const oldRunId = '8d1ec216-c340-4ef5-b17b-cf4c67d39471';
 const sessionId = '978f8825-0ba3-4363-9be2-b193a07636e5';
 const doneId = '1c59465a-ac69-4944-be34-11988468089b';
 const measurementId = '8215de38-87dd-400e-845e-caf4155f6a57';
-const beforeProgram = Date.parse('2026-11-19T06:00:00.000Z');
 const nextMonth = Date.parse('2026-12-03T12:00:00.000Z');
 
 function configuredData(id = runId, startDate = '2026-11-20', timezone = 'Asia/Kolkata'): Fit30Data {
@@ -213,59 +212,5 @@ describe('backup and CSV files', () => {
     expect(output).toContain('"completed",600,720,');
     expect(output).toContain('"Low row machine (lower row)","skipped",300,0,');
     expect(output).toContain('"\'\t=SUM(1,2)\n""second line"""');
-  });
-});
-
-describe('calendar reminders', () => {
-  it('exports the canonical gym schedule at the selected Asia/Kolkata time with one alert per event', () => {
-    const exported = createCalendarExport(configuredData(), beforeProgram);
-    const unfold = exported.text.replaceAll('\r\n ', '');
-
-    expect(exported.eventCount).toBe(26);
-    expect(unfold).toContain('DTSTART:20261120T130000Z');
-    expect(unfold).toContain('DTSTART:20261219T130000Z');
-    expect(unfold).not.toContain('DTSTART:20261126T130000Z');
-    expect(unfold).toContain('5 min Low row machine (lower row)');
-    expect(unfold.match(/BEGIN:VALARM/g)).toHaveLength(26);
-    expect(exported.text.split('\r\n').every((line) => new TextEncoder().encode(line).length <= 75)).toBe(true);
-  });
-
-  it('skips past reminder times and already completed days', () => {
-    const data = configuredData();
-    data.sessions = [completed(data, '2026-11-21T06:00:00.000Z')];
-    const { eventCount, text } = createCalendarExport(data, Date.parse('2026-11-21T18:00:00.000Z'));
-
-    expect(eventCount).toBe(23);
-    expect(text).not.toContain('DTSTART:20261122T130000Z');
-    expect(text).toContain('DTSTART:20261123T130000Z');
-  });
-
-  it('updates time without changing event IDs and supports opt-in recovery reminders', () => {
-    const data = configuredData();
-    const first = createCalendarExport(data, beforeProgram);
-    const second = createCalendarExport({ ...data, preferences: { ...data.preferences, reminderTime: '20:15' } }, beforeProgram);
-    const recovery = createCalendarExport({ ...data, preferences: { ...data.preferences, remindOnRestDays: true } }, beforeProgram);
-
-    expect(second.text).toContain('DTSTART:20261120T144500Z');
-    expect(second.text.match(/UID:.+/g)).toEqual(first.text.match(/UID:.+/g));
-    expect(recovery.eventCount).toBe(30);
-    expect(recovery.text).toContain('Day 7: Recovery day');
-  });
-
-  it('resolves daylight-saving folds and gaps in the scheduled timezone', () => {
-    const fall = configuredData(runId, '2026-11-01', 'America/New_York');
-    fall.preferences.reminderTime = '01:30';
-    const spring = configuredData(runId, '2026-03-08', 'America/New_York');
-    spring.preferences.reminderTime = '02:30';
-
-    expect(createCalendarExport(fall, Date.parse('2026-10-31T00:00:00Z')).text).toContain('DTSTART:20261101T053000Z');
-    expect(createCalendarExport(spring, Date.parse('2026-03-07T00:00:00Z')).text).toContain('DTSTART:20260308T073000Z');
-  });
-
-  it('handles a finished schedule and asks for a time before exporting an unset reminder', () => {
-    const data = configuredData();
-    expect(createCalendarExport(data, Date.parse('2026-12-20T00:00:00Z')).eventCount).toBe(0);
-    data.preferences.reminderTime = null;
-    expect(() => createCalendarExport(data, beforeProgram)).toThrow('Choose a reminder time');
   });
 });

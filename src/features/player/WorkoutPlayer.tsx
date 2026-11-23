@@ -14,6 +14,7 @@ import './player.css';
 interface WorkoutPlayerProps {
   session: Session;
   preferences: Preferences;
+  online: boolean;
   onAction: (action: WorkoutAction | WorkoutAction[], quiet?: boolean) => Promise<boolean>;
   onExit: () => void;
 }
@@ -24,7 +25,7 @@ type Overlay = {
   exerciseId: string | undefined;
 };
 
-export function WorkoutPlayer({ session, preferences, onAction, onExit }: WorkoutPlayerProps) {
+export function WorkoutPlayer({ session, preferences, online, onAction, onExit }: WorkoutPlayerProps) {
   const { position, exercises } = session;
   const day = getDay(session.plannedDayNumber);
   const log = exercises[position];
@@ -346,6 +347,7 @@ export function WorkoutPlayer({ session, preferences, onAction, onExit }: Workou
       {visibleOverlay === 'tutorial' && log && (
         <TutorialDialog
           exerciseId={log.exerciseId}
+          online={online}
           onClose={closeOverlay}
           timerPaused={!review}
           onOpenVideo={() => void apply({ type: 'watchTutorial' }, true)}

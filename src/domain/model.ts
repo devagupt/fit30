@@ -14,6 +14,7 @@ export const preferencesSchema = z.object({
   timezone,
   reminderTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected a local time in HH:mm format").nullable(),
   remindOnRestDays: z.boolean(),
+  remindersEnabled: z.boolean().default(false),
   sound: z.boolean(),
   vibration: z.boolean(),
 }).strict();
@@ -226,6 +227,7 @@ export const emptyData: Fit30Data = {
     timezone: program.timezone,
     reminderTime: null,
     remindOnRestDays: false,
+    remindersEnabled: false,
     sound: false,
     vibration: false,
   },

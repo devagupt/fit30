@@ -2,11 +2,12 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Bell, CalendarDays, Clock3, Dumbbell, Leaf } from 'lucide-react';
 import type { DataUpdate } from '../../data/storage';
 import { isProgramStartDate, localDate } from '../../domain/dates';
-import { type Fit30Data, preferencesSchema } from '../../domain/model';
+import type { Fit30Data } from '../../domain/model';
 import { formatPrescription, getExercise, program } from '../../domain/program';
 import { startProgram } from '../../domain/workout';
 import { Dialog } from '../../ui/Dialog';
 import { BackupRestore } from '../settings/BackupRestore';
+import { isPhoneApp } from '../reminders/deviceReminders';
 import './onboarding.css';
 
 interface OnboardingProps {
@@ -21,7 +22,6 @@ const preview = program.days[0];
 export function Onboarding({ data, onSave, busy }: OnboardingProps) {
   const [step, setStep] = useState(0);
   const [startDate, setStartDate] = useState(() => localDate(data.preferences.timezone));
-  const [reminderTime, setReminderTime] = useState(data.preferences.reminderTime ?? '');
   const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
@@ -41,10 +41,6 @@ export function Onboarding({ data, onSave, busy }: OnboardingProps) {
       setError('Choose a valid start date for your program.');
       return;
     }
-    if (!preferencesSchema.safeParse({ ...data.preferences, reminderTime: reminderTime || null }).success) {
-      setError('Choose a valid reminder time or leave it blank.');
-      return;
-    }
     goTo(2);
   }
 
@@ -54,8 +50,7 @@ export function Onboarding({ data, onSave, busy }: OnboardingProps) {
     try {
       await onSave((current) => {
         if (current.activeRunId) throw new Error('A Fit30 program is already active.');
-        const next = startProgram(current, startDate, current.preferences.timezone);
-        return { ...next, preferences: { ...next.preferences, reminderTime: reminderTime || null } };
+        return startProgram(current, startDate, current.preferences.timezone);
       });
     } finally {
       saving.current = false;
@@ -83,12 +78,10 @@ export function Onboarding({ data, onSave, busy }: OnboardingProps) {
           <form onSubmit={confirmSchedule}>
             <CalendarDays className="setup-step-icon" size={27} aria-hidden="true" />
             <h1 id="setup-heading" ref={heading} tabIndex={-1}>{headings[step]}</h1>
-            <p className="setup-intro">Pick the date for Day 1. Reminders use {timezone}.</p>
+            <p className="setup-intro">Pick the date for Day 1. Your program uses {timezone}.</p>
             <div className="setup-fields">
               <label className="field">Start date<input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required max="9999-12-02" /></label>
-              <label className="field">Daily reminder time<input type="time" value={reminderTime} onChange={(event) => setReminderTime(event.target.value)} aria-describedby="setup-time-hint" /></label>
             </div>
-            <p id="setup-time-hint" className="setup-hint">Leave the reminder time blank if you prefer to set it later.</p>
             {error && <p className="settings-feedback settings-error" role="alert">{error}</p>}
             <div className="setup-actions">
               <button type="submit" className="button button-primary">Continue</button>
@@ -116,7 +109,9 @@ export function Onboarding({ data, onSave, busy }: OnboardingProps) {
           <>
             <Bell className="setup-step-icon" size={27} aria-hidden="true" />
             <h1 id="setup-heading" ref={heading} tabIndex={-1}>{headings[step]}</h1>
-            <p className="setup-intro">Use your phone’s calendar for daily reminders. Export the dates from Settings and import them into your calendar app.</p>
+            <p className="setup-intro">{isPhoneApp
+              ? 'Set up a daily workout reminder in Settings after starting your program.'
+              : 'The Fit30 Android and iPhone app builds can send on-device workout reminders.'}</p>
             <p className="setup-hint">Exercise timer alerts work while you have a workout open.</p>
             <div className="setup-actions">
               <button type="button" className="button button-primary" disabled={busy} onClick={() => void beginProgram()}>Begin program</button>

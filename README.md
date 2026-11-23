@@ -18,6 +18,34 @@ npm run build
 npm run preview
 ```
 
+## Install Fit30 with offline reminders
+
+The standalone Android and iPhone builds include the workout plan, photos, and movement guides. The phone schedules reminders for upcoming workouts in the active program using the saved time zone. In **Settings → Reminders and alerts → Daily reminders**, pick a time, tap **Enable reminders**, and allow notifications. Recovery reminders are optional. Fit30 updates its reminders after a schedule change or a finished workout.
+
+If you already use the Home Screen web app, open **Settings → Backup and export → Download JSON backup** there. In the standalone app, choose **Restore backup** on the welcome screen and select that file. Your existing workout history travels with the backup. Enable reminders in the standalone app after importing.
+
+### Build the Android installer
+
+Install JDK 21 and the Android SDK with API 36 using Android Studio. Set `JAVA_HOME` to your JDK and `ANDROID_HOME` to your SDK. [Capacitor Android setup](https://capacitorjs.com/docs/getting-started/environment-setup#android-requirements)
+
+```sh
+npm ci
+npm run build:android
+```
+
+Transfer `android/app/build/outputs/apk/debug/app-debug.apk` to your phone and open it from Downloads or Files. When Android asks, allow that source to install the APK. Once installed, Fit30 and its daily reminders work offline. If Android offers **Allow precise timing** in Fit30, you can give Fit30 **Alarms & reminders** permission. Otherwise, Android may deliver the reminder after the selected time.
+
+Rebuild updates with the same local signing key to install over the existing copy. If this project has an `android/fit30-debug.keystore` file, Gradle uses it for debug APKs. Keep that file private.
+
+### Build the iPhone app
+
+Install Xcode 26 or later on your Mac. Run the following in the project folder, select the **App** scheme and your iPhone in Xcode, then choose your signing team under **Signing & Capabilities** and run the app. [Capacitor iOS setup](https://capacitorjs.com/docs/getting-started/environment-setup#ios-requirements) · [Apple device setup](https://developer.apple.com/documentation/xcode/running-your-app-in-simulator-or-on-a-device)
+
+```sh
+npm ci
+npm run open:ios
+```
+
 ## Try it on your phone
 
 Connect the computer and phone to the same Wi-Fi. Stop any running preview with **Control+C**, then run the following from the project folder.
@@ -30,6 +58,8 @@ npm run preview -- --host 0.0.0.0
 On your phone, open the **Network** URL printed in the terminal. Use Safari on iPhone or Chrome on Android. This works while the Mac and phone can reach each other. For offline use, set up Fit30 once using Android port forwarding over USB or Wi-Fi, or use trusted HTTPS. [Service Workers specification](https://www.w3.org/TR/service-workers/)
 
 ### Install on iPhone
+
+These steps install the Safari Home Screen web app. Use the [standalone iPhone build](#build-the-iphone-app) for on-device daily reminders.
 
 Open the HTTPS address of a running Fit30 build in Safari. On your Mac’s Wi-Fi, you can use a [trusted HTTPS preview](#install-over-trusted-https). To share the app with someone on another network, give them a publicly hosted HTTPS address for the production build. The GitHub repository contains the source code.
 
@@ -86,7 +116,7 @@ For testing on the same Wi-Fi, use a production preview on your Mac. Set up Node
 
 4. On the phone, open the `https://` **Network** URL printed in Terminal. Use Safari and the [iPhone install steps](#install-on-iphone), or use Chrome on Android and choose **Install and create shortcut** or **Add to Home screen** from its menu. After installing on Android, open Fit30 while connected, wait for **Ready for offline workouts** in **Settings → Install Fit30**, then try reopening it in airplane mode. [Chrome web app guide](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&hl=en)
 
-Browser storage belongs to a specific browser and address, including the protocol and port. To move your records to an HTTPS address or another device, use **Settings → Download JSON backup**, then **Restore backup** at the destination. A calendar file contains upcoming reminders at your selected time. Import it into your calendar and replace that import when the schedule changes. Alert delivery follows your calendar’s settings.
+Browser storage belongs to a specific browser and address, including the protocol and port. To move your records to an HTTPS address or another device, use **Settings → Backup and export → Download JSON backup**, then **Restore backup** at the destination.
 
 To update, launch Fit30 from the Home Screen while it can reach its original address. For a Mac HTTPS preview, reconnect to the Mac’s Wi-Fi first. Open **Settings → Install Fit30 → Check for update** and tap **Apply update**. On older Android builds, open `index.html?fit30-update=1` at the same Fit30 address in Chrome. The update keeps your saved workouts and settings.
 
@@ -102,7 +132,7 @@ The 30-minute target is the sum of the original exercise budgets. A 30-second re
 
 Open a tutorial to pause the workout timer and see its original movement guide and written cues offline. Tap **Play video** to stream the YouTube tutorial in Fit30. If the embedded player stalls or reports a playback error, use the local guide or open the video in YouTube when you have internet.
 
-In **Settings → Reminders and alerts → In-workout timer**, enable sound or vibration and use **Test alert** to check them on your phone. When the workout is visible, Fit30 requests that the screen stay awake during active exercise and rest timers where the device supports it. A visual cue appears at the end of a countdown. Fit30 also provides calendar exports for closed-app reminders.
+In **Settings → Reminders and alerts → In-workout timer**, enable sound or vibration and use **Test alert** to check them on your phone. When the workout is visible, Fit30 requests that the screen stay awake during active exercise and rest timers where the device supports it. A visual cue appears at the end of a countdown.
 
 ## Track progress by exercise
 

@@ -58,7 +58,7 @@ describe('exercise tutorial content', () => {
 
   it('uses the supported low-row source and warns to check the equipment', () => {
     const screen = renderToStaticMarkup(
-      <TutorialDialog exerciseId="low_row_machine" onClose={() => {}} timerPaused />,
+      <TutorialDialog exerciseId="low_row_machine" online onClose={() => {}} timerPaused />,
     );
 
     expect(screen).toContain('Low row machine (lower row)');
@@ -75,7 +75,7 @@ describe('exercise tutorial content', () => {
     const exercise = program.getExercise('low_row_machine');
     vi.spyOn(program, 'getExercise').mockReturnValue({ ...exercise, tutorial_video: null });
 
-    const screen = renderToStaticMarkup(<TutorialDialog exerciseId="low_row_machine" onClose={() => {}} />);
+    const screen = renderToStaticMarkup(<TutorialDialog exerciseId="low_row_machine" online onClose={() => {}} />);
 
     expect(screen).toContain('Video unavailable');
     expect(screen).toContain('Lower-back cue');

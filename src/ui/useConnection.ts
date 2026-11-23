@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { Network } from '@capacitor/network';
 import { useEffect, useState } from 'react';
 
 export type OfflineStatus = 'ready' | 'preparing' | 'setup_failed' | 'unavailable';
@@ -7,14 +9,32 @@ interface InstallPrompt extends Event {
 }
 
 export function useConnection() {
-  const [online, setOnline] = useState(() => navigator.onLine);
-  const eligible = import.meta.env.PROD && window.isSecureContext && 'serviceWorker' in navigator;
+  const native = Capacitor.isNativePlatform();
+  const [online, setOnline] = useState(() => !native && navigator.onLine);
+  const eligible = !native && import.meta.env.PROD && window.isSecureContext && 'serviceWorker' in navigator;
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>(eligible ? 'preparing' : 'unavailable');
   const [installPrompt, setInstallPrompt] = useState<InstallPrompt | null>(null);
   const [appInstalled, setAppInstalled] = useState(() => window.matchMedia('(display-mode: standalone)').matches);
   const [setupAttempt, setSetupAttempt] = useState(0);
 
   useEffect(() => {
+    if (native) {
+      let active = true;
+      let changed = false;
+      const listener = Network.addListener('networkStatusChange', ({ connected }) => {
+        changed = true;
+        if (active) setOnline(connected);
+      });
+      void listener.then(() => Network.getStatus()).then(({ connected }) => {
+        if (active && !changed) setOnline(connected);
+      }).catch(() => {
+        if (active && !changed) setOnline(navigator.onLine);
+      });
+      return () => {
+        active = false;
+        void listener.then((handle) => handle.remove()).catch(() => {});
+      };
+    }
     const update = () => setOnline(navigator.onLine);
     window.addEventListener('online', update);
     window.addEventListener('offline', update);
@@ -22,7 +42,7 @@ export function useConnection() {
       window.removeEventListener('online', update);
       window.removeEventListener('offline', update);
     };
-  }, []);
+  }, [native]);
 
   useEffect(() => {
     if (!eligible) return;

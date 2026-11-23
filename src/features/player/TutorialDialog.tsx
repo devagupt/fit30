@@ -1,5 +1,4 @@
 import { CirclePlay, Info } from 'lucide-react';
-import { useSyncExternalStore } from 'react';
 import { categoryLabel, getExercise, tutorialEmbedUrl, tutorialWatchUrl } from '../../domain/program';
 import { formatClock } from './formatClock';
 import { InlineTutorial } from './InlineTutorial';
@@ -9,22 +8,13 @@ import './player.css';
 
 interface TutorialDialogProps {
   exerciseId: string;
+  online: boolean;
   onClose: () => void;
   onOpenVideo?: () => void;
   timerPaused?: boolean;
 }
 
-function subscribeToConnection(onChange: () => void) {
-  window.addEventListener('online', onChange);
-  window.addEventListener('offline', onChange);
-  return () => {
-    window.removeEventListener('online', onChange);
-    window.removeEventListener('offline', onChange);
-  };
-}
-
-export function TutorialDialog({ exerciseId, onClose, onOpenVideo, timerPaused }: TutorialDialogProps) {
-  const online = useSyncExternalStore(subscribeToConnection, () => navigator.onLine, () => true);
+export function TutorialDialog({ exerciseId, online, onClose, onOpenVideo, timerPaused }: TutorialDialogProps) {
   const exercise = getExercise(exerciseId);
   const video = exercise.tutorial_video;
   const watchUrl = tutorialWatchUrl(exercise);

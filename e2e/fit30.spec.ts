@@ -29,12 +29,11 @@ async function stubYouTubePlayer(page: Page, errors: number[] = []) {
   }));
 }
 
-async function onBoard(page: Page, startDate: string, reminderTime = '', url = '/', now = testInstant) {
+async function onBoard(page: Page, startDate: string, url = '/', now = testInstant) {
   await page.clock.setFixedTime(now);
   await page.goto(url);
   await page.getByRole('button', { name: 'Get started' }).click();
   await page.getByLabel('Start date').fill(startDate);
-  if (reminderTime) await page.getByLabel('Daily reminder time').fill(reminderTime);
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByRole('button', { name: 'Preview Day 1' }).click();
   const preview = page.getByRole('dialog', { name: 'Day 1 workout' });
@@ -81,7 +80,7 @@ test('carries over a missed Day 3, tracks its timer, and advances after it is lo
   await page.route(`${videoOrigin}/embed/**`, (route) => route.fulfill({
     contentType: 'text/html', body: '<!doctype html><title>Tutorial fixture</title><button>Pause clip</button>',
   }));
-  await onBoard(page, '2026-11-18', '18:30', '/', new Date('2026-11-18T09:30:00Z'));
+  await onBoard(page, '2026-11-18', '/', new Date('2026-11-18T09:30:00Z'));
   await finishScheduledWorkout(page);
   await setLocalTime(page, new Date('2026-11-19T09:30:00Z'));
   await expect(page.getByText('Day 2 of 30')).toBeVisible();
@@ -237,7 +236,7 @@ test('an optional walk stays a rest day and a make-up partial attempt is resumab
 
 test('moves recovery to Tuesday and changes the daily photo offline while keeping workout history', async ({ page, context }, info) => {
   const monday = new Date('2026-11-16T09:30:00Z');
-  await onBoard(page, '2026-11-16', '18:30', '/', monday);
+  await onBoard(page, '2026-11-16', '/', monday);
   await finishScheduledWorkout(page);
 
   await setLocalTime(page, new Date('2026-11-22T09:30:00Z'));
@@ -331,7 +330,7 @@ test('resumes an interrupted offline download and saves progress without the Mac
     const address = server.httpServer.address();
     if (!address || typeof address === 'string') throw new Error('Test preview did not open a local port');
     url = `http://127.0.0.1:${address.port}/`;
-    await onBoard(page, '2026-11-20', '', url);
+    await onBoard(page, '2026-11-20', url);
     await tab(page, 'Settings');
     await expect(button(page, 'Retry offline setup')).toBeVisible();
     expect(indexDownloads).toBe(1);
@@ -410,7 +409,7 @@ test('applies an offline update with an old tab open and keeps workout history',
     const address = server.httpServer.address();
     if (!address || typeof address === 'string') throw new Error('Test preview did not open a local port');
     const url = `http://127.0.0.1:${address.port}/`;
-    await onBoard(page, '2026-11-20', '', url);
+    await onBoard(page, '2026-11-20', url);
     await finishScheduledWorkout(page);
     await tab(page, 'Settings');
     await expect(page.getByText('Ready for offline workouts')).toBeVisible();
@@ -451,20 +450,18 @@ test('applies an offline update with an old tab open and keeps workout history',
   }
 });
 
-test('backup restore and measurement exports preserve data and reminder time', async ({ page, browser }) => {
-  await onBoard(page, '2026-11-20', '18:30');
+test('backup restore and measurement exports preserve data and the time zone', async ({ page, browser }) => {
+  await onBoard(page, '2026-11-20');
   await button(page, 'Log measurement').click();
   await page.getByLabel('Waist (cm)', { exact: true }).fill('83.5');
   await button(page, 'Save measurement').click();
   await expect(page.getByText('83.5 cm').first()).toBeVisible();
   await tab(page, 'Settings');
-  const firstCalendar = (await download(page, 'Export calendar reminders')).toString('utf8');
-  expect(firstCalendar).toContain('DTSTART:20261120T130000Z');
-  expect(firstCalendar).not.toContain('20261126T130000Z');
-  await page.getByLabel('Daily reminder time').fill('19:15');
+  await expect(button(page, 'Export calendar reminders')).toHaveCount(0);
+  await expect(page.getByLabel('Daily reminder time')).toHaveCount(0);
+  await page.getByLabel('Time zone').fill('Europe/London');
   await button(page, 'Save settings').click();
-  const secondCalendar = (await download(page, 'Export calendar reminders')).toString('utf8');
-  expect(secondCalendar).toContain('DTSTART:20261120T134500Z');
+  await expect(page.getByText('Settings saved.')).toBeVisible();
   expect((await download(page, 'Download measurement CSV')).toString('utf8')).toContain('83.5');
   const backup = await download(page, 'Download JSON backup');
 
@@ -478,7 +475,7 @@ test('backup restore and measurement exports preserve data and reminder time', a
     await dialog.getByRole('button', { name: 'Restore backup', exact: true }).click();
     await expect(transfer.getByText('Day 1 of 30')).toBeVisible();
     await tab(transfer, 'Settings');
-    await expect(transfer.getByLabel('Daily reminder time')).toHaveValue('19:15');
+    await expect(transfer.getByLabel('Time zone')).toHaveValue('Europe/London');
     await transfer.getByLabel('Fit30 backup file').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{') });
     await expect(transfer.getByRole('alert')).toHaveText(/unreadable.*Fit30 JSON backup/);
     await transfer.reload();

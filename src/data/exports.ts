@@ -1,9 +1,18 @@
-import { scheduledDate } from '../domain/dates';
+import { Capacitor } from '@capacitor/core';
 import type { Fit30Data, SetLog } from '../domain/model';
-import { getDay, getExercise, program } from '../domain/program';
+import { getDay, getExercise } from '../domain/program';
 import { exerciseElapsedMs } from '../domain/workout';
 
-export function downloadText(filename: string, text: string, mime = 'text/plain;charset=utf-8') {
+export async function downloadText(filename: string, text: string, mime = 'text/plain;charset=utf-8') {
+  if (Capacitor.isNativePlatform()) {
+    const [{ Directory, Encoding, Filesystem }, { Share }] = await Promise.all([
+      import('@capacitor/filesystem'), import('@capacitor/share'),
+    ]);
+    const { uri } = await Filesystem.writeFile({ path: filename, data: text, directory: Directory.Cache, encoding: Encoding.UTF8 });
+    await Share.share({ files: [uri], title: filename });
+    return;
+  }
+
   const url = URL.createObjectURL(new Blob([text], { type: mime }));
   const link = document.createElement('a');
   link.href = url;
@@ -68,102 +77,4 @@ export function measurementsCsv(data: Fit30Data): string {
       measurement.programRunId, measurement.id, measurement.localDate, measurement.type,
       measurement.value, measurement.createdAt,
     ]));
-}
-
-function calendarText(value: string): string {
-  return value.replaceAll('\\', '\\\\').replace(/\r\n|\r|\n/g, '\\n').replaceAll(',', '\\,').replaceAll(';', '\\;');
-}
-
-function utcStamp(instant: number): string {
-  return new Date(instant).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
-}
-
-function localTimeConverter(timezone: string) {
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    calendar: 'gregory',
-    numberingSystem: 'latn',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
-  });
-
-  function localAsUtc(instant: number): number {
-    const fields = Object.fromEntries(formatter.formatToParts(instant).map(({ type, value }) => [type, value]));
-    return Date.parse(`${fields.year.padStart(4, '0')}-${fields.month}-${fields.day}T${fields.hour}:${fields.minute}:${fields.second}Z`);
-  }
-
-  return (date: string, time: string) => {
-    const wanted = Date.parse(`${date}T${time}:00Z`);
-    const horizon = 36 * 60 * 60 * 1000;
-    const probes = [wanted - horizon, wanted, wanted + horizon];
-    const candidates = probes.map((instant) => wanted - (localAsUtc(instant) - instant));
-    const matches = candidates.filter((instant) => localAsUtc(instant) === wanted);
-    // During a fall-back fold use the first occurrence. During a spring-forward gap use the pre-gap offset.
-    return matches.length > 0 ? Math.min(...matches) : candidates[0];
-  };
-}
-
-const encoder = new TextEncoder();
-
-function foldLine(line: string): string {
-  let folded = '';
-  let length = 0;
-  for (const character of line) {
-    const bytes = encoder.encode(character).length;
-    if (length + bytes > 75) {
-      folded += '\r\n ';
-      length = 1;
-    }
-    folded += character;
-    length += bytes;
-  }
-  return folded;
-}
-
-export function createCalendarExport(data: Fit30Data, now = Date.now()): { text: string; eventCount: number } {
-  const run = data.runs.find((candidate) => candidate.id === data.activeRunId);
-  if (!run) throw new Error('Start a Fit30 program to export reminders.');
-
-  const { reminderTime, remindOnRestDays } = data.preferences;
-  if (reminderTime === null) throw new Error('Choose a reminder time before exporting reminders.');
-
-  const toUtc = localTimeConverter(run.timezone);
-  const completed = new Set(data.sessions.filter((session) =>
-    session.programRunId === run.id && session.status === 'completed',
-  ).map((session) => session.plannedDayNumber));
-  const eventLines: string[] = [];
-  let eventCount = 0;
-
-  for (const day of program.days) {
-    if (completed.has(day.day_number) || (day.day_type === 'rest' && !remindOnRestDays)) continue;
-
-    const start = toUtc(scheduledDate(run, day.day_number), reminderTime);
-    if (start < now) continue;
-
-    const rest = day.day_type === 'rest';
-    const summary = rest ? `Fit30 — Day ${day.day_number}: Recovery day` : `Fit30 — Day ${day.day_number}: ${day.session_name}`;
-    const exercises = day.exercise_blocks.map((block) => `${block.duration_min} min ${getExercise(block.exercise_id).name}`);
-    const description = rest ? `Planned recovery. Optional: ${exercises.join(', ')}.` : `${exercises.join(', ')}. Start when ready.`;
-    eventLines.push(
-      'BEGIN:VEVENT',
-      `UID:${calendarText(run.id)}-day-${day.day_number}@fit30.local`,
-      `DTSTAMP:${utcStamp(now)}`,
-      `DTSTART:${utcStamp(start)}`,
-      `DURATION:PT${rest ? day.optional_activity_minutes : day.target_gym_minutes}M`,
-      `SUMMARY:${calendarText(summary)}`,
-      `DESCRIPTION:${calendarText(description)}`,
-      'CLASS:PRIVATE',
-      'TRANSP:TRANSPARENT',
-      'BEGIN:VALARM',
-      'ACTION:DISPLAY',
-      'TRIGGER:PT0S',
-      `DESCRIPTION:${calendarText(summary)}`,
-      'END:VALARM',
-      'END:VEVENT',
-    );
-    eventCount += 1;
-  }
-
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Fit30//Workout Reminders//EN', 'CALSCALE:GREGORIAN', ...eventLines, 'END:VCALENDAR'];
-  return { text: lines.map(foldLine).join('\r\n') + '\r\n', eventCount };
 }

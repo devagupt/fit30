@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Bell, CalendarDays, Download, HardDrive, Smartphone } from 'lucide-react';
 import { serializeBackup } from '../../data/backup';
-import { createCalendarExport, downloadText, measurementsCsv, workoutsCsv } from '../../data/exports';
+import { downloadText, measurementsCsv, workoutsCsv } from '../../data/exports';
 import type { DataUpdate } from '../../data/storage';
 import { isProgramStartDate, localDate, weekdays, type Weekday } from '../../domain/dates';
 import { type Fit30Data, type Preferences, type ProgramRun, preferencesSchema } from '../../domain/model';
@@ -11,6 +11,8 @@ import { Dialog } from '../../ui/Dialog';
 import { updateUrl } from '../../ui/UpdateScreen';
 import type { OfflineStatus } from '../../ui/useConnection';
 import { signalTimerEnd } from '../player/timerAlert';
+import { isPhoneApp, type DeviceReminderStatus } from '../reminders/deviceReminders';
+import { ReminderSettings } from '../reminders/ReminderSettings';
 import { BackupRestore } from './BackupRestore';
 import './settings.css';
 
@@ -20,6 +22,7 @@ interface SettingsScreenProps {
   online: boolean;
   offlineStatus: OfflineStatus;
   appInstalled: boolean;
+  deviceReminders: { status: DeviceReminderStatus; refresh: () => void };
   onInstall?: () => void;
   onRetryOffline?: () => void;
   onSave: (update: DataUpdate) => Promise<boolean>;
@@ -58,14 +61,13 @@ function setPreferences(data: Fit30Data, runId: string, preferences: Preferences
   };
 }
 
-export function SettingsScreen({ data, run, online, offlineStatus, appInstalled, onInstall, onRetryOffline, onSave, busy }: SettingsScreenProps) {
+export function SettingsScreen({ data, run, online, offlineStatus, appInstalled, deviceReminders, onInstall, onRetryOffline, onSave, busy }: SettingsScreenProps) {
   const [preferenceChanges, setPreferenceChanges] = useState<Partial<Preferences>>({});
   const [startDateChange, setStartDateChange] = useState<string | null>(null);
   const [closedWeekdayChange, setClosedWeekdayChange] = useState<Weekday | null>(null);
   const [settingsFeedback, setSettingsFeedback] = useState<Feedback | null>(null);
   const [alertFeedback, setAlertFeedback] = useState<Feedback | null>(null);
   const [testingAlert, setTestingAlert] = useState(false);
-  const [calendarFeedback, setCalendarFeedback] = useState<Feedback | null>(null);
   const [scheduleFeedback, setScheduleFeedback] = useState<Feedback | null>(null);
   const [exportFeedback, setExportFeedback] = useState<Feedback | null>(null);
   const [restartDate, setRestartDate] = useState<string | null>(null);
@@ -81,7 +83,6 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
   function changePreference<K extends keyof Preferences>(key: K, value: Preferences[K]) {
     setPreferenceChanges((changes) => ({ ...changes, [key]: value }));
     setSettingsFeedback(null);
-    setCalendarFeedback(null);
     if (key === 'sound' || key === 'vibration') setAlertFeedback(null);
   }
 
@@ -109,7 +110,7 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
     if (busy || saving.current) return;
     const preferences = readPreferences();
     if (!preferences) {
-      setSettingsFeedback({ text: 'Choose a valid time zone, such as Asia/Kolkata, and check your reminder time.', error: true });
+      setSettingsFeedback({ text: 'Choose a valid time zone, such as Asia/Kolkata.', error: true });
       return;
     }
 
@@ -122,27 +123,6 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
       }
     } finally {
       saving.current = false;
-    }
-  }
-
-  function exportCalendar() {
-    const preferences = readPreferences();
-    if (!preferences) {
-      setCalendarFeedback({ text: 'Choose a valid time zone and reminder time to export the calendar.', error: true });
-      return;
-    }
-
-    try {
-      const exported = createCalendarExport(setPreferences(data, run.id, preferences));
-      if (exported.eventCount === 0) {
-        setCalendarFeedback({ text: 'There are no upcoming reminders for this program.' });
-        return;
-      }
-
-      downloadText('fit30-reminders.ics', exported.text, 'text/calendar;charset=utf-8');
-      setCalendarFeedback({ text: `${exported.eventCount} ${exported.eventCount === 1 ? 'reminder' : 'reminders'} exported. Open the file in your calendar app.` });
-    } catch (cause) {
-      setCalendarFeedback({ text: cause instanceof Error ? cause.message : 'The reminder calendar couldn’t be exported.', error: true });
     }
   }
 
@@ -227,16 +207,16 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
     }
   }
 
-  function exportFile(format: 'backup' | 'workouts' | 'measurements') {
+  async function exportFile(format: 'backup' | 'workouts' | 'measurements') {
     try {
       if (format === 'backup') {
-        downloadText(`fit30-backup-${localDate(run.timezone)}.json`, serializeBackup(data), 'application/json;charset=utf-8');
+        await downloadText(`fit30-backup-${localDate(run.timezone)}.json`, serializeBackup(data), 'application/json;charset=utf-8');
         setExportFeedback({ text: 'JSON backup downloaded.' });
       } else if (format === 'workouts') {
-        downloadText('fit30-workouts.csv', workoutsCsv(data), 'text/csv;charset=utf-8');
+        await downloadText('fit30-workouts.csv', workoutsCsv(data), 'text/csv;charset=utf-8');
         setExportFeedback({ text: 'Workout history downloaded.' });
       } else {
-        downloadText('fit30-measurements.csv', measurementsCsv(data), 'text/csv;charset=utf-8');
+        await downloadText('fit30-measurements.csv', measurementsCsv(data), 'text/csv;charset=utf-8');
         setExportFeedback({ text: 'Measurements downloaded.' });
       }
     } catch {
@@ -251,13 +231,18 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
         <div className="settings-column">
           <section className="panel settings-panel" aria-labelledby="reminders-heading">
             <h2 id="reminders-heading"><Bell size={21} aria-hidden="true" /> Reminders and alerts</h2>
-            <form onSubmit={(event) => void saveSettings(event)}>
+            {isPhoneApp ? (
+              <ReminderSettings preferences={data.preferences} status={deviceReminders.status} busy={busy}
+                refresh={deviceReminders.refresh}
+                onSave={(values) => onSave((latest) => setPreferences(latest, run.id, { ...latest.preferences, ...values }))} />
+            ) : (
+              <p>For daily notifications, use the Fit30 Android or iPhone app build.</p>
+            )}
+            <form className={isPhoneApp ? 'settings-subsection' : undefined} onSubmit={(event) => void saveSettings(event)}>
               <div className="settings-fields">
-                <label className="field">Daily reminder time<input type="time" value={fields.reminderTime ?? ''} disabled={busy} onChange={(event) => changePreference('reminderTime', event.target.value || null)} /></label>
                 <label className="field">Time zone<input type="text" list="fit30-timezones" value={fields.timezone} disabled={busy} onChange={(event) => changePreference('timezone', event.target.value)} autoComplete="off" autoCapitalize="none" spellCheck={false} required /></label>
                 <datalist id="fit30-timezones">{suggestedTimezones.map((timezone) => <option key={timezone} value={timezone} />)}</datalist>
               </div>
-              <label className="settings-check"><input type="checkbox" checked={fields.remindOnRestDays} disabled={busy} onChange={(event) => changePreference('remindOnRestDays', event.target.checked)} /> Include recovery days</label>
               <div className="settings-subsection">
                 <h3>In-workout timer</h3>
                 <p>Fit30 can signal when your exercise block ends while the workout is open.</p>
@@ -272,13 +257,6 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
               <button type="submit" className="button button-primary" disabled={busy || !preferencesChanged}>Save settings</button>
               <FeedbackLine feedback={settingsFeedback} />
             </form>
-            <div className="settings-subsection">
-              <h3>Calendar reminders</h3>
-              <p>Use your calendar for alerts when Fit30 is closed. Download upcoming dates with the reminder time and time zone above.</p>
-              <button type="button" className="button button-secondary" onClick={exportCalendar} disabled={busy}><Download size={17} aria-hidden="true" /> Export calendar reminders</button>
-              <FeedbackLine feedback={calendarFeedback} />
-              <p className="settings-note">Import the file into a separate calendar so you can replace the reminders when your schedule changes. Alerts follow your calendar settings.</p>
-            </div>
           </section>
           <section className="panel settings-panel" aria-labelledby="program-settings-heading">
             <h2 id="program-settings-heading"><CalendarDays size={21} aria-hidden="true" /> Program schedule</h2>
@@ -315,7 +293,7 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
             </div>
             <FeedbackLine feedback={exportFeedback} />
           </section>
-          <section className="panel settings-panel" aria-labelledby="install-heading">
+          {!isPhoneApp && <section className="panel settings-panel" aria-labelledby="install-heading">
             <h2 id="install-heading"><Smartphone size={21} aria-hidden="true" /> Install Fit30</h2>
             <p role="status" className={`settings-install-status${offlineStatus === 'ready' ? ' settings-install-ready' : ''}`}>{offlineCopy[offlineStatus]}</p>
             {onRetryOffline && <button type="button" className="button button-secondary" onClick={onRetryOffline}>Retry offline setup</button>}
@@ -327,7 +305,7 @@ export function SettingsScreen({ data, run, online, offlineStatus, appInstalled,
             {offlineStatus === 'ready' && (
               <p className="settings-note">Once installed, open Fit30 from your Home Screen. Workouts, logging, and form cues work without your Mac. Videos use your phone’s internet connection.</p>
             )}
-          </section>
+          </section>}
         </div>
       </div>
       {restartDate !== null && (
