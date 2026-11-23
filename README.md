@@ -29,6 +29,20 @@ npm run preview -- --host 0.0.0.0
 
 On your phone, open the **Network** URL printed in the terminal. Use Safari on iPhone or Chrome on Android. This works while the Mac and phone can reach each other. For offline use, set up Fit30 once using Android port forwarding over USB or Wi-Fi, or use trusted HTTPS. [Service Workers specification](https://www.w3.org/TR/service-workers/)
 
+### Install on iPhone
+
+Open the HTTPS address of a running Fit30 build in Safari. On your Mac’s Wi-Fi, you can use a [trusted HTTPS preview](#install-over-trusted-https). To share the app with someone on another network, give them a publicly hosted HTTPS address for the production build. The GitHub repository contains the source code.
+
+1. In Safari, tap **Share → Add to Home Screen**. If Safari shows a page menu, open it and tap **Share** first. If the Home Screen action is missing, find it under **Edit Actions** in the share menu. [Apple’s Home Screen guide](https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/27/ios/27)
+2. Enable **Open as Web App** if shown, then tap **Add**.
+3. Open Fit30 from its Home Screen icon while connected. Choose **Get started** to set up your program, or choose **Restore backup** on the welcome screen to bring over an existing program.
+4. Open **Settings → Install Fit30** inside the Home Screen app. Wait for **Ready for offline workouts**. If the download is interrupted, reconnect to the Fit30 address and tap **Retry offline setup**.
+5. Turn on airplane mode and make sure Wi-Fi is off. Close and reopen Fit30 from its icon. Confirm that Today loads, the workout timer opens, and a tutorial shows its movement guide and written cues. Streaming the embedded YouTube video requires internet.
+
+The Home Screen app uses its own workout storage. If you already logged workouts in Safari, choose **Settings → Backup and export → Download JSON backup** there, then open **Restore backup** in the Home Screen app and select the JSON file. [WebKit’s Home Screen storage details](https://webkit.org/blog/14787/webkit-features-in-safari-17-2/)
+
+To check timer sound, open **Settings → Reminders and alerts → In-workout timer**, enable **Play a sound**, and tap **Test alert**. Tap **Save settings** to use the setting during workouts. Timer alerts are for open workouts. Safari on iPhone lacks the vibration support used by Fit30. [Vibration compatibility](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate#browser_compatibility)
+
 ### Install on Android for the gym
 
 1. On your Mac, stop any preview on port 4173 with **Control+C** in its Terminal tab. Then run the following from the project folder.
@@ -51,26 +65,30 @@ On your phone, open the **Network** URL printed in the terminal. Use Safari on i
 
 ### Install over trusted HTTPS
 
-1. With [mkcert](https://github.com/FiloSottile/mkcert) installed on your computer, run `mkcert -install`. Copy the computer’s IPv4 address from the **Network** URL and use it in place of `192.168.1.25` below.
+For testing on the same Wi-Fi, use a production preview on your Mac. Set up Node.js and the app dependencies first. [Local setup](#run-on-your-computer)
+
+1. Connect the Mac and phone to the same Wi-Fi. Find the Mac’s IPv4 address in **System Settings → Wi-Fi → Details → TCP/IP**. Install mkcert on the Mac and run the following in the project folder. Replace `192.168.1.25` with your Mac’s address. [mkcert installation guide](https://github.com/FiloSottile/mkcert#installation)
 
    ```sh
+   mkcert -install
    mkdir -p .fit30-certs
    mkcert -key-file .fit30-certs/key.pem -cert-file .fit30-certs/cert.pem 192.168.1.25
    ```
 
-2. Transfer only the `rootCA.pem` certificate from the folder printed by `mkcert -CAROOT` to your phone. Install and trust it using the phone’s certificate settings. On iPhone, install the profile in Settings, then enable full trust under **General → About → Certificate Trust Settings**. [mkcert mobile setup](https://github.com/FiloSottile/mkcert#mobile-devices) · [Apple certificate instructions](https://support.apple.com/en-us/102390)
-3. Stop the HTTP preview with **Control+C**, then run the HTTPS preview. Open its `https://` Network URL on the phone.
+2. Run `mkcert -CAROOT` to find the CA directory. Transfer only `rootCA.pem` to the phone. On iPhone, AirDrop and open the file, then install it under **Settings → Profile Downloaded → Install**. In **Settings → General → About → Certificate Trust Settings**, turn on full trust for the certificate. On Android, install it as a **CA certificate** in the phone’s certificate settings. [mkcert mobile setup](https://github.com/FiloSottile/mkcert#mobile-devices) · [Apple profile installation](https://support.apple.com/en-az/102400) · [Apple certificate trust](https://support.apple.com/en-ie/102390)
+3. Build Fit30 and start the HTTPS preview on the Mac. If port 4174 is already in use by a Fit30 preview, stop that preview with **Control+C** in its Terminal tab first.
 
    ```sh
-   FIT30_HTTPS_KEY=.fit30-certs/key.pem FIT30_HTTPS_CERT=.fit30-certs/cert.pem npm run preview -- --host 0.0.0.0
+   npm run build
+   FIT30_HTTPS_KEY=.fit30-certs/key.pem FIT30_HTTPS_CERT=.fit30-certs/cert.pem \
+     npm run preview -- --host 0.0.0.0 --port 4174
    ```
 
-4. Tap **Share → Add to Home Screen** in Safari and enable **Open as Web App** if shown. In Chrome on Android, open **Menu**, choose **Install and create shortcut** or **Add to Home screen**, then tap **Install**. [Apple Home Screen guide](https://support.apple.com/en-az/guide/iphone/iphea86e5236/26/ios/26) · [Chrome web app guide](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&hl=en)
-5. Open the installed app while online and confirm **Settings → Install Fit30** reports that offline setup is ready. Turn on airplane mode, reopen Fit30, and confirm you can still view the plan, read form cues, and save progress.
+4. On the phone, open the `https://` **Network** URL printed in Terminal. Use Safari and the [iPhone install steps](#install-on-iphone), or use Chrome on Android and choose **Install and create shortcut** or **Add to Home screen** from its menu. After installing on Android, open Fit30 while connected, wait for **Ready for offline workouts** in **Settings → Install Fit30**, then try reopening it in airplane mode. [Chrome web app guide](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&hl=en)
 
 Browser storage belongs to a specific browser and address, including the protocol and port. To move your records to an HTTPS address or another device, use **Settings → Download JSON backup**, then **Restore backup** at the destination. A calendar file contains upcoming reminders at your selected time. Import it into your calendar and replace that import when the schedule changes. Alert delivery follows your calendar’s settings.
 
-To update an installed copy, connect to the Mac’s Wi-Fi and open **Settings → Install Fit30 → Check for update**. Choose **Apply update**. For an earlier version, open `index.html?fit30-update=1` at the same Fit30 address in Chrome. The update keeps your saved workouts and settings.
+To update, launch Fit30 from the Home Screen while it can reach its original address. For a Mac HTTPS preview, reconnect to the Mac’s Wi-Fi first. Open **Settings → Install Fit30 → Check for update** and tap **Apply update**. On older Android builds, open `index.html?fit30-update=1` at the same Fit30 address in Chrome. The update keeps your saved workouts and settings.
 
 ## Workout walkthrough
 
@@ -101,7 +119,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The browser suite uses the production build and a temporary preview server. To use an existing Chromium or Chrome executable, set `FIT30_CHROME_PATH` to its full path before running the suite.
+The browser suite runs in Chromium against the production build on a temporary preview server. To use an existing Chromium or Chrome executable, set `FIT30_CHROME_PATH` to its full path before running the suite. Use the iPhone airplane-mode check above to verify offline behavior on a physical device.
 
 The original [`data/30_day_gym_plan_with_video_tutorials.json`](data/30_day_gym_plan_with_video_tutorials.json) is validated at runtime and in tests. The program definition is bundled read-only. IndexedDB stores progress separately, and the production service worker caches the app files. A newer offline build takes over after the last tab or installed window using the earlier build is closed.
 
